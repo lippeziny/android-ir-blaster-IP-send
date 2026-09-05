@@ -1,0 +1,4263 @@
+// ./lib/widgets/create_button.dart
+import 'dart:async';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:irblaster_controller/ir/ir_protocol_registry.dart';
+import 'package:irblaster_controller/ir/ir_protocol_types.dart';
+import 'package:irblaster_controller/ir_finder/irblaster_db.dart';
+import 'package:irblaster_controller/ir_finder/ir_finder_models.dart';
+import 'package:irblaster_controller/l10n/l10n.dart';
+import 'package:irblaster_controller/state/last_action_strip.dart';
+import 'package:irblaster_controller/utils/button_color_accessibility.dart';
+import 'package:irblaster_controller/utils/ir.dart';
+import 'package:irblaster_controller/utils/remote.dart';
+import 'package:irblaster_controller/widgets/code_test.dart';
+import 'package:irblaster_controller/widgets/icon_picker.dart';
+import 'package:irblaster_controller/widgets/ir_waveform_view.dart';
+import 'package:uuid/uuid.dart';
+
+enum _LabelType { image, text, icon }
+
+enum _SignalType { hex, raw, protocol }
+
+enum _NecBitOrder { msb, byteSwap, trueLsb }
+
+_NecBitOrder _decodeNecBitOrder(String? value) {
+  switch (value?.trim().toLowerCase()) {
+    case 'lsb':
+      return _NecBitOrder.byteSwap;
+    case 'true_lsb':
+      return _NecBitOrder.trueLsb;
+    default:
+      return _NecBitOrder.msb;
+  }
+}
+
+String _encodeNecBitOrder(_NecBitOrder value) {
+  switch (value) {
+    case _NecBitOrder.byteSwap:
+      return 'lsb';
+    case _NecBitOrder.trueLsb:
+      return 'true_lsb';
+    case _NecBitOrder.msb:
+      return 'msb';
+  }
+}
+
+String _necBitOrderLabel(_NecBitOrder value) {
+  switch (value) {
+    case _NecBitOrder.byteSwap:
+      return 'Byte Swap';
+    case _NecBitOrder.trueLsb:
+      return 'True LSB (Bit Reversal)';
+    case _NecBitOrder.msb:
+      return 'MSB (compat)';
+  }
+}
+
+enum _DbPreset { power, volume, channel, navigation, all }
+
+const MethodChannel _platformChannel =
+    MethodChannel('org.nslabs/irtransmitter');
+
+class CreateButton extends StatefulWidget {
+  final IRButton? button;
+  const CreateButton({super.key, this.button});
+
+  @override
+  State<CreateButton> createState() => _CreateButtonState();
+}
+
+class _CreateButtonState extends State<CreateButton> {
+  static const int _kHelperMaxLines = 4;
+  static const int _kHintMaxLines = 2;
+  static const int _kErrorMaxLines = 3;
+  static const int _kTotalSteps = 3;
+
+  late final String _buttonId;
+
+  final TextEditingController codeController = TextEditingController();
+  final TextEditingController hexFreqController = TextEditingController();
+  final TextEditingController rawDataController = TextEditingController();
+  final TextEditingController freqController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
+  final TextEditingController headerMarkCtrl =
+      TextEditingController(text: NECParams.defaults.headerMark.toString());
+  final TextEditingController headerSpaceCtrl =
+      TextEditingController(text: NECParams.defaults.headerSpace.toString());
+  final TextEditingController bitMarkCtrl =
+      TextEditingController(text: NECParams.defaults.bitMark.toString());
+  final TextEditingController zeroSpaceCtrl =
+      TextEditingController(text: NECParams.defaults.zeroSpace.toString());
+  final TextEditingController oneSpaceCtrl =
+      TextEditingController(text: NECParams.defaults.oneSpace.toString());
+  final TextEditingController trailerMarkCtrl =
+      TextEditingController(text: NECParams.defaults.trailerMark.toString());
+
+  final TextEditingController protoFreqController = TextEditingController();
+
+  bool _tabDatabase = false;
+  int _currentStep = 0;
+
+  String? _dbBrand;
+  String? _dbModel;
+  String? _dbProtocol;
+  List<String> _dbProtocols = <String>[];
+
+  final TextEditingController _dbSearchCtl = TextEditingController();
+  final ScrollController _dbScrollCtl = ScrollController();
+  Timer? _dbSearchDebounce;
+
+  bool _dbInit = false;
+  bool _dbMetaLoading = false;
+  bool _dbLoading = false;
+  bool _dbExhausted = false;
+  int _dbOffset = 0;
+  int _dbLoadGeneration = 0;
+  final List<IrDbKeyCandidate> _dbRows = <IrDbKeyCandidate>[];
+  IrDbKeyCandidate? _dbSelected;
+
+  final Map<String, TextEditingController> _protoControllers =
+      <String, TextEditingController>{};
+
+  _LabelType _labelType = _LabelType.text;
+  _SignalType _signalType = _SignalType.hex;
+
+  bool useCustomNec = false;
+  _NecBitOrder _necBitOrder = _NecBitOrder.msb;
+
+  String _selectedProtocolId = IrProtocolIds.nec;
+
+  Widget? _imagePreview;
+  String? _imagePath;
+
+  IconData? _selectedIcon;
+  Color? _selectedColor;
+  Color? _selectedIconColor;
+
+  bool _didAttachListeners = false;
+
+  _DbPreset _dbPreset = _DbPreset.power;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _buttonId = widget.button?.id ?? const Uuid().v4();
+    hexFreqController.text = kDefaultNecFrequencyHz.toString();
+
+    _dbScrollCtl.addListener(_onDbScroll);
+
+    if (widget.button != null) {
+      final b = widget.button!;
+      final hasRaw = b.rawData != null && b.rawData!.trim().isNotEmpty;
+      final learnedProtocolId = b.protocol?.trim();
+      final bool isLearnedProtocol =
+          learnedProtocolId == IrProtocolIds.tiqiaaLearned ||
+              learnedProtocolId == IrProtocolIds.elksmartLearned ||
+              learnedProtocolId == IrProtocolIds.audioLearned;
+      final Map<String, dynamic> learnedParams =
+          b.protocolParams ?? const <String, dynamic>{};
+      final String learnedRawPreview =
+          (learnedParams['rawPreview'] as String? ?? '').trim();
+      final int learnedFreq =
+          ((learnedParams['frequencyHz'] as num?)?.toInt() ?? 38000)
+              .clamp(kMinIrFrequencyHz, kMaxIrFrequencyHz);
+
+      if (b.iconCodePoint != null) {
+        _labelType = _LabelType.icon;
+        _selectedIcon = IconData(
+          b.iconCodePoint!,
+          fontFamily: b.iconFontFamily,
+          fontPackage: b.iconFontPackage,
+        );
+      } else if (b.isImage) {
+        _labelType = _LabelType.image;
+        _imagePath = b.image;
+        if (_imagePath!.startsWith("assets")) {
+          _imagePreview = Image.asset(_imagePath!, fit: BoxFit.contain);
+        } else {
+          _imagePreview = Image.file(File(_imagePath!), fit: BoxFit.contain);
+        }
+      } else {
+        _labelType = _LabelType.text;
+        nameController.text = b.image;
+      }
+
+      if (b.buttonColor != null) {
+        _selectedColor = normalizeAccessibleButtonColor(Color(b.buttonColor!));
+      }
+      if (b.iconColor != null) {
+        _selectedIconColor =
+            normalizeAccessibleButtonColor(Color(b.iconColor!));
+      }
+
+      if (isLearnedProtocol && learnedRawPreview.isNotEmpty) {
+        _signalType = _SignalType.raw;
+        rawDataController.text = learnedRawPreview;
+        freqController.text = learnedFreq.toString();
+      } else if (b.protocol != null && b.protocol!.trim().isNotEmpty) {
+        final normalized = b.protocol!.trim();
+        _selectedProtocolId = normalized;
+        if (IrProtocolRegistry.definitionFor(_selectedProtocolId) == null) {
+          _selectedProtocolId = IrProtocolIds.nec;
+        }
+        _signalType = _SignalType.protocol;
+        _selectedProtocolId = b.protocol!.trim();
+        if (b.frequency != null && b.frequency! > 0) {
+          protoFreqController.text = b.frequency!.toString();
+        }
+        final normalizedParams = _normalizeImportedProtocolParams(
+          _selectedProtocolId,
+          b.protocolParams ?? const <String, dynamic>{},
+          legacyCode: b.code,
+        );
+
+        _syncProtocolControllersFromDefinition(normalizedParams);
+
+        // If params were empty or incomplete, try deriving from legacy code as a last step
+        if ((b.protocolParams == null || b.protocolParams!.isEmpty) &&
+            b.code != null) {
+          final hexFallback = b.code!.toRadixString(16).toUpperCase();
+          _fillProtocolFieldsFromDbHex(hexFallback);
+        }
+      } else if (hasRaw && isNecConfigString(b.rawData)) {
+        _signalType = _SignalType.hex;
+        useCustomNec = true;
+        if (b.code != null) {
+          codeController.text = b.code!.toRadixString(16);
+        }
+        if (b.frequency != null && b.frequency! > 0) {
+          hexFreqController.text = b.frequency!.toString();
+        } else {
+          hexFreqController.text = kDefaultNecFrequencyHz.toString();
+        }
+        final params = parseNecParamsFromString(b.rawData!);
+        headerMarkCtrl.text = params.headerMark.toString();
+        headerSpaceCtrl.text = params.headerSpace.toString();
+        bitMarkCtrl.text = params.bitMark.toString();
+        zeroSpaceCtrl.text = params.zeroSpace.toString();
+        oneSpaceCtrl.text = params.oneSpace.toString();
+        trailerMarkCtrl.text = params.trailerMark.toString();
+        _necBitOrder = _decodeNecBitOrder(b.necBitOrder);
+      } else if (hasRaw) {
+        _signalType = _SignalType.raw;
+        rawDataController.text = b.rawData!;
+        freqController.text =
+            (b.frequency ?? kDefaultNecFrequencyHz).toString();
+      } else if (b.code != null) {
+        _signalType = _SignalType.hex;
+        useCustomNec = false;
+        codeController.text = b.code!.toRadixString(16);
+        hexFreqController.text = kDefaultNecFrequencyHz.toString();
+      }
+    } else {
+      _syncProtocolControllersFromDefinition(const <String, dynamic>{});
+    }
+
+    _attachListenersOnce();
+  }
+
+  @override
+  void dispose() {
+    _dbSearchDebounce?.cancel();
+    _dbSearchCtl.dispose();
+    _dbScrollCtl.dispose();
+
+    codeController.dispose();
+    hexFreqController.dispose();
+    rawDataController.dispose();
+    freqController.dispose();
+    nameController.dispose();
+
+    headerMarkCtrl.dispose();
+    headerSpaceCtrl.dispose();
+    bitMarkCtrl.dispose();
+    zeroSpaceCtrl.dispose();
+    oneSpaceCtrl.dispose();
+    trailerMarkCtrl.dispose();
+
+    protoFreqController.dispose();
+
+    for (final c in _protoControllers.values) {
+      c.dispose();
+    }
+
+    super.dispose();
+  }
+
+  void _attachListenersOnce() {
+    if (_didAttachListeners) return;
+    _didAttachListeners = true;
+
+    void onChanged() {
+      if (mounted) setState(() {});
+    }
+
+    codeController.addListener(onChanged);
+    hexFreqController.addListener(onChanged);
+    rawDataController.addListener(onChanged);
+    freqController.addListener(onChanged);
+    nameController.addListener(onChanged);
+
+    headerMarkCtrl.addListener(onChanged);
+    headerSpaceCtrl.addListener(onChanged);
+    bitMarkCtrl.addListener(onChanged);
+    zeroSpaceCtrl.addListener(onChanged);
+    oneSpaceCtrl.addListener(onChanged);
+    trailerMarkCtrl.addListener(onChanged);
+
+    protoFreqController.addListener(onChanged);
+  }
+
+  String get _screenTitle => widget.button == null
+      ? context.l10n.createButtonTitle
+      : context.l10n.editButtonTitle;
+
+  bool get _hasLabel {
+    if (_labelType == _LabelType.image) return _imagePath != null;
+    if (_labelType == _LabelType.icon) return _selectedIcon != null;
+    return nameController.text.trim().isNotEmpty;
+  }
+
+  bool get _hexLooksValid {
+    if (_signalType != _SignalType.hex) return true;
+    final v = codeController.text.trim();
+    if (v.isEmpty) return false;
+    final parsed = int.tryParse(v, radix: 16);
+    return parsed != null;
+  }
+
+  bool get _rawLooksValid {
+    if (_signalType != _SignalType.raw) return true;
+    if (rawDataController.text.trim().isEmpty) return false;
+    if (freqController.text.trim().isEmpty) return false;
+
+    final f = int.tryParse(freqController.text.trim());
+    if (f == null) return false;
+    if (f < kMinIrFrequencyHz || f > kMaxIrFrequencyHz) return false;
+
+    final parts = rawDataController.text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return false;
+    for (final p in parts) {
+      if (int.tryParse(p) == null) return false;
+    }
+    return true;
+  }
+
+  bool get _customNecLooksValid {
+    if (_signalType != _SignalType.hex) return true;
+    if (!useCustomNec) return true;
+
+    final allNumeric = [
+      headerMarkCtrl.text,
+      headerSpaceCtrl.text,
+      bitMarkCtrl.text,
+      zeroSpaceCtrl.text,
+      oneSpaceCtrl.text,
+      trailerMarkCtrl.text,
+    ].every((t) => int.tryParse(t.trim()) != null);
+
+    if (!allNumeric) return false;
+
+    final freqText = hexFreqController.text.trim();
+    if (freqText.isEmpty) return false;
+
+    final f = int.tryParse(freqText);
+    if (f == null) return false;
+    if (f < kMinIrFrequencyHz || f > kMaxIrFrequencyHz) return false;
+
+    return true;
+  }
+
+  bool get _protocolLooksValid {
+    if (_signalType != _SignalType.protocol) return true;
+
+    if (_selectedProtocolId.trim().isEmpty) return false;
+
+    final freqText = protoFreqController.text.trim();
+    if (freqText.isNotEmpty) {
+      final f = int.tryParse(freqText);
+      if (f == null) return false;
+      if (f < kMinIrFrequencyHz || f > kMaxIrFrequencyHz) return false;
+    }
+
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+    if (def == null) return false;
+
+    for (final field in def.fields) {
+      final c = _protoControllers[field.id];
+      if (c == null) {
+        if (field.required) return false;
+        continue;
+      }
+      final t = c.text.trim();
+      if (t.isEmpty) {
+        if (field.required) return false;
+        continue;
+      }
+
+      if (field.type == IrFieldType.intDecimal) {
+        final int? value = int.tryParse(t);
+        if (value == null) return false;
+        if (field.min != null && value < field.min!) return false;
+        if (field.max != null && value > field.max!) return false;
+      } else if (field.type == IrFieldType.intHex) {
+        final int? value = int.tryParse(t, radix: 16);
+        if (value == null) return false;
+        if (field.min != null && value < field.min!) return false;
+        if (field.max != null && value > field.max!) return false;
+      } else if (field.type == IrFieldType.choice) {
+        if (!field.options.contains(t)) return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool get _canSave =>
+      _hasLabel &&
+      _hexLooksValid &&
+      _rawLooksValid &&
+      _customNecLooksValid &&
+      _protocolLooksValid;
+
+  bool get _stepCanContinue {
+    switch (_currentStep) {
+      case 0:
+        return _hasLabel;
+      case 1:
+        return true;
+      case 2:
+        return _canSave;
+      default:
+        return false;
+    }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showCurrentStepValidationMessage() {
+    if (_currentStep == 0) {
+      if (_labelType == _LabelType.image) {
+        _showSnack(context.l10n.requiredSelectImageOrSwitch);
+      } else if (_labelType == _LabelType.icon) {
+        _showSnack(context.l10n.requiredSelectIconOrSwitch);
+      } else {
+        _showSnack(context.l10n.requiredEnterButtonLabel);
+      }
+      return;
+    }
+
+    if (_currentStep == 2) {
+      _showSnack(context.l10n.completeRequiredFieldsToSave);
+    }
+  }
+
+  void _goToNextStep() {
+    FocusScope.of(context).unfocus();
+    if (!_stepCanContinue) {
+      _showCurrentStepValidationMessage();
+      return;
+    }
+    if (_currentStep >= _kTotalSteps - 1) return;
+    setState(() => _currentStep += 1);
+  }
+
+  void _goToPreviousStep() {
+    FocusScope.of(context).unfocus();
+    if (_currentStep == 0) {
+      Navigator.pop(context);
+      return;
+    }
+    setState(() => _currentStep -= 1);
+  }
+
+  static bool _coerceBool(dynamic v) {
+    if (v is bool) return v;
+    if (v is int) return v != 0;
+    if (v is String) {
+      final s = v.trim().toLowerCase();
+      if (s == 'true' || s == '1' || s == 'yes' || s == 'y') return true;
+      if (s == 'false' || s == '0' || s == 'no' || s == 'n') return false;
+    }
+    return false;
+  }
+
+  String _cleanHex(String input) {
+    return input.replaceAll(RegExp(r'[^0-9a-fA-F]'), '').toUpperCase();
+  }
+
+  bool _fieldLooksHexLike(IrFieldDef f) {
+    final s = ('${f.id} ${f.label} ${f.hint ?? ''} ${f.helperText ?? ''}')
+        .toLowerCase();
+    return s.contains('hex') ||
+        s.contains('byte') ||
+        s.contains('address') ||
+        s.contains('command') ||
+        s.contains('cmd') ||
+        s.contains('code') ||
+        s.contains('value');
+  }
+
+  int? _expectedHexDigits(IrFieldDef f) {
+    if (f.type == IrFieldType.intHex) {
+      return f.maxLength;
+    }
+
+    if (f.type == IrFieldType.string) {
+      final ml = f.maxLength;
+      if (ml != null && ml > 0) {
+        // Some fields include spaces in maxLength (e.g., "AA BB CC DD" = 11 chars).
+        // Keep common direct hex lengths exact.
+        if (ml <= 2) return ml; // 1 byte / nibble
+        if (ml == 4 || ml == 6 || ml == 8) return ml;
+        if (ml == 11) return 8; // Kaseikyo style
+      }
+
+      final hint = (f.hint ?? '').trim();
+      if (hint.isNotEmpty) {
+        if (_wantsSpacedBytes(f)) {
+          final int pairCount =
+              RegExp(r'[0-9A-Fa-f]{2}').allMatches(hint).length;
+          if (pairCount > 0) return pairCount * 2;
+        }
+
+        // Use the longest standalone hex token; avoids counting "e" from "e.g.".
+        final tokens = RegExp(r'\b[0-9A-Fa-f]+\b').allMatches(hint);
+        int best = 0;
+        for (final m in tokens) {
+          final len = m.group(0)?.length ?? 0;
+          if (len > best) best = len;
+        }
+        if (best > 0) return best;
+      }
+    }
+
+    return null;
+  }
+
+  bool _wantsSpacedBytes(IrFieldDef f) {
+    final hint = (f.hint ?? '').trim();
+    if (hint.isEmpty) return false;
+    // Detect "AA BB CC DD" style
+    return RegExp(r'^([0-9A-Fa-f]{2}\s+){1,}[0-9A-Fa-f]{2}$').hasMatch(hint);
+  }
+
+  String _formatBytesSpaced(String hex) {
+    var h = _cleanHex(hex);
+    if (h.isEmpty) return '';
+    if (h.length.isOdd) h = '0$h';
+    final bytes = <String>[];
+    for (int i = 0; i + 1 < h.length; i += 2) {
+      bytes.add(h.substring(i, i + 2));
+    }
+    return bytes.join(' ');
+  }
+
+  IrFieldDef? _findFieldById(IrProtocolDefinition def, String id) {
+    for (final f in def.fields) {
+      if (f.id == id) return f;
+    }
+    return null;
+  }
+
+  Map<String, String> _deriveProtocolFieldTextFromHex(
+      String protocolId, String hexInput) {
+    final def = IrProtocolRegistry.definitionFor(protocolId);
+    if (def == null) return const <String, String>{};
+
+    final hex = _cleanHex(hexInput);
+    if (hex.isEmpty) return const <String, String>{};
+
+    String? addrId;
+    String? cmdId;
+    String? hexId;
+
+    for (final f in def.fields) {
+      if (addrId == null && _idLooksLike(f, 'address')) addrId = f.id;
+      if (cmdId == null &&
+          (_idLooksLike(f, 'command') || _idLooksLike(f, 'cmd'))) {
+        cmdId = f.id;
+      }
+      if (hexId == null &&
+          (_idLooksLike(f, 'hex') ||
+              _idLooksLike(f, 'code') ||
+              _idLooksLike(f, 'value'))) {
+        hexId = f.id;
+      }
+    }
+
+    // Special: RCA (24-bit packed) -> address nibble + command byte
+    if (protocolId == IrProtocolIds.rca38 && addrId != null && cmdId != null) {
+      final String packed =
+          hex.length >= 3 ? hex.substring(hex.length - 3) : hex.padLeft(3, '0');
+      final String addrNib = packed.substring(0, 1).toUpperCase();
+      final String cmdByte = packed.substring(1, 3).toUpperCase();
+      return <String, String>{
+        addrId: addrNib,
+        cmdId: cmdByte,
+      };
+    }
+
+    if (protocolId == IrProtocolIds.rc5 && addrId != null && cmdId != null) {
+      final int packed = int.parse(hex, radix: 16) & 0xFFF;
+      final int addr = (packed >> 6) & 0x1F;
+      final int fieldBit = (packed >> 11) & 1;
+      final int cmd = (packed & 0x3F) | (fieldBit == 0 ? 0x40 : 0);
+      return <String, String>{
+        addrId: addr.toRadixString(16).toUpperCase().padLeft(2, '0'),
+        cmdId: cmd.toRadixString(16).toUpperCase().padLeft(2, '0'),
+      };
+    }
+
+    if ((protocolId == IrProtocolIds.sony12 ||
+            protocolId == IrProtocolIds.sony15 ||
+            protocolId == IrProtocolIds.sony20) &&
+        addrId != null &&
+        cmdId != null) {
+      final int bits;
+      final int addrBits;
+      if (protocolId == IrProtocolIds.sony12) {
+        bits = 12;
+        addrBits = 5;
+      } else if (protocolId == IrProtocolIds.sony15) {
+        bits = 15;
+        addrBits = 8;
+      } else {
+        bits = 20;
+        addrBits = 13;
+      }
+      const int cmdBits = 7;
+
+      final int data = int.parse(hex, radix: 16) & ((1 << bits) - 1);
+      final int cmd = data & ((1 << cmdBits) - 1);
+      final int addr = (data >> cmdBits) & ((1 << addrBits) - 1);
+
+      final addrField = _findFieldById(def, addrId);
+      final cmdField = _findFieldById(def, cmdId);
+      final int addrDigits = (addrField == null)
+          ? ((addrBits + 3) ~/ 4)
+          : (_expectedHexDigits(addrField) ?? ((addrBits + 3) ~/ 4));
+      final int cmdDigits = (cmdField == null)
+          ? ((cmdBits + 3) ~/ 4)
+          : (_expectedHexDigits(cmdField) ?? ((cmdBits + 3) ~/ 4));
+
+      String addrVal =
+          addr.toRadixString(16).toUpperCase().padLeft(addrDigits, '0');
+      String cmdVal =
+          cmd.toRadixString(16).toUpperCase().padLeft(cmdDigits, '0');
+      if (addrField != null && _wantsSpacedBytes(addrField)) {
+        addrVal = _formatBytesSpaced(addrVal);
+      }
+      if (cmdField != null && _wantsSpacedBytes(cmdField)) {
+        cmdVal = _formatBytesSpaced(cmdVal);
+      }
+
+      return <String, String>{
+        addrId: addrVal,
+        cmdId: cmdVal,
+      };
+    }
+
+    // Address + Command protocols (most common mapping)
+    if (addrId != null && cmdId != null) {
+      final addrField = _findFieldById(def, addrId);
+      final cmdField = _findFieldById(def, cmdId);
+
+      final int aDigits =
+          addrField == null ? 2 : (_expectedHexDigits(addrField) ?? 2);
+      final int cDigits =
+          cmdField == null ? 2 : (_expectedHexDigits(cmdField) ?? 2);
+      final int totalDigits = aDigits + cDigits;
+      final String splitHex =
+          (hex.length < totalDigits) ? hex.padLeft(totalDigits, '0') : hex;
+
+      String addrVal = '';
+      String cmdVal = '';
+
+      if (splitHex.length >= totalDigits) {
+        // If payload is address + inv + cmd + inv (like Pioneer/Samsung family)
+        // and both fields are same width, prefer extracting [addr][cmd] from positions 0 and 2*aDigits.
+        final bool looksLikeInvertedLayout =
+            (aDigits == cDigits) && (splitHex.length == totalDigits * 2);
+
+        if (looksLikeInvertedLayout) {
+          addrVal = splitHex.substring(0, aDigits);
+          final int cmdOff = 2 * aDigits;
+          if (splitHex.length >= cmdOff + cDigits) {
+            cmdVal = splitHex.substring(cmdOff, cmdOff + cDigits);
+          } else {
+            cmdVal = splitHex.substring(aDigits, aDigits + cDigits);
+          }
+        } else {
+          // Default sequential split
+          addrVal = splitHex.substring(0, aDigits);
+          cmdVal = splitHex.substring(aDigits, aDigits + cDigits);
+        }
+      }
+
+      if (addrVal.isNotEmpty || cmdVal.isNotEmpty) {
+        if (addrField != null && _wantsSpacedBytes(addrField)) {
+          addrVal = _formatBytesSpaced(addrVal);
+        }
+        if (cmdField != null && _wantsSpacedBytes(cmdField)) {
+          cmdVal = _formatBytesSpaced(cmdVal);
+        }
+        return <String, String>{
+          if (addrVal.isNotEmpty) addrId: addrVal,
+          if (cmdVal.isNotEmpty) cmdId: cmdVal,
+        };
+      }
+    }
+
+    // Single HEX-like field (Denon/JVC/Proton/RC5/RC6/F12/NEC variants/etc)
+    if (hexId != null) {
+      final f = _findFieldById(def, hexId);
+      int? maxDigits = f == null ? null : _expectedHexDigits(f);
+
+      String val = hex;
+      if (maxDigits != null && maxDigits > 0 && val.length > maxDigits) {
+        // Prefer last N digits for better compatibility with RC5(3), Denon(4), JVC(4), etc.
+        val = val.substring(val.length - maxDigits);
+      }
+
+      if (f != null && _wantsSpacedBytes(f)) {
+        val = _formatBytesSpaced(val);
+      }
+
+      return <String, String>{hexId: val};
+    }
+
+    // Last resort: fill the first required string field if it looks hex-like
+    for (final f in def.fields) {
+      if (!f.required) continue;
+      if (f.type != IrFieldType.string) continue;
+      if (!_fieldLooksHexLike(f)) continue;
+
+      int? maxDigits = _expectedHexDigits(f);
+      String val = hex;
+      if (maxDigits != null && maxDigits > 0 && val.length > maxDigits) {
+        val = val.substring(val.length - maxDigits);
+      }
+      if (_wantsSpacedBytes(f)) val = _formatBytesSpaced(val);
+      return <String, String>{f.id: val};
+    }
+
+    return const <String, String>{};
+  }
+
+  Map<String, dynamic> _normalizeImportedProtocolParams(
+    String protocolId,
+    Map<String, dynamic> params, {
+    int? legacyCode,
+  }) {
+    final def = IrProtocolRegistry.definitionFor(protocolId);
+    if (def == null) return params;
+
+    final Map<String, dynamic> out = <String, dynamic>{};
+    final Map<String, dynamic> norm = <String, dynamic>{};
+
+    for (final e in params.entries) {
+      norm[_normalizeProtoKey(e.key)] = e.value;
+    }
+
+    for (final f in def.fields) {
+      final String nkId = _normalizeProtoKey(f.id);
+      final String nkLabel = _normalizeProtoKey(f.label);
+      dynamic v = norm[nkId] ?? norm[nkLabel];
+      if (v != null) out[f.id] = v;
+    }
+
+    // If params were missing or not matched, try fallback from common "hex/code/value" keys
+    if (out.isEmpty) {
+      dynamic vHex = norm['hex'] ??
+          norm['code'] ??
+          norm['value'] ??
+          norm['data'] ??
+          norm['hexcode'];
+      String? hexCandidate;
+
+      if (vHex is int) {
+        hexCandidate = vHex.toRadixString(16).toUpperCase();
+      } else if (vHex is String) {
+        hexCandidate = vHex;
+      }
+
+      // Or fallback from legacy saved `button.code`
+      hexCandidate ??= (legacyCode != null)
+          ? legacyCode.toRadixString(16).toUpperCase()
+          : null;
+
+      if (hexCandidate != null && hexCandidate.trim().isNotEmpty) {
+        final derived =
+            _deriveProtocolFieldTextFromHex(protocolId, hexCandidate);
+        for (final kv in derived.entries) {
+          out[kv.key] = kv.value;
+        }
+      }
+    }
+
+    return out;
+  }
+
+  void _syncProtocolControllersFromDefinition(
+      Map<String, dynamic> existingParams) {
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+
+    _protoControllers.forEach((_, c) => c.dispose());
+    _protoControllers.clear();
+
+    if (def == null) return;
+
+    for (final field in def.fields) {
+      final c = TextEditingController();
+
+      dynamic v = existingParams[field.id];
+      v ??= field.defaultValue;
+
+      if (v == null &&
+          field.type == IrFieldType.choice &&
+          field.options.isNotEmpty) {
+        v = field.options.first;
+      }
+
+      if (v != null) {
+        if (field.type == IrFieldType.intHex) {
+          if (v is int) {
+            c.text = v.toRadixString(16).toUpperCase();
+          } else {
+            c.text = v.toString().trim();
+          }
+        } else if (field.type == IrFieldType.boolean) {
+          c.text = _coerceBool(v).toString();
+        } else if (field.type == IrFieldType.string &&
+            _fieldLooksHexLike(field)) {
+          // Critical fix: most protocols store "hex/address/command" as STRING fields
+          if (v is int) {
+            final int? digits = _expectedHexDigits(field);
+            String hx = v.toRadixString(16).toUpperCase();
+            if (digits != null && digits > 0) {
+              hx = hx.padLeft(digits, '0');
+            }
+            c.text = _wantsSpacedBytes(field) ? _formatBytesSpaced(hx) : hx;
+          } else {
+            final s = v.toString().trim();
+            final cleaned = _cleanHex(s);
+            if (cleaned.isEmpty) {
+              c.text = s;
+            } else {
+              int? digits = _expectedHexDigits(field);
+              String hx = cleaned;
+              if (digits != null && digits > 0 && hx.length > digits) {
+                hx = hx.substring(hx.length - digits);
+              }
+              c.text = _wantsSpacedBytes(field) ? _formatBytesSpaced(hx) : hx;
+            }
+          }
+        } else {
+          c.text = v.toString();
+        }
+      }
+
+      c.addListener(() {
+        if (mounted) setState(() {});
+      });
+
+      _protoControllers[field.id] = c;
+    }
+  }
+
+  Future<void> _pasteInto(TextEditingController controller,
+      {bool hexOnly = false}) async {
+    final data = await Clipboard.getData('text/plain');
+    final text = data?.text;
+    if (text == null || text.trim().isEmpty) return;
+
+    if (hexOnly) {
+      final cleaned = text.replaceAll(RegExp(r'[^0-9a-fA-F]'), '');
+      controller.text = cleaned;
+    } else {
+      controller.text = text.trim();
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final value = await getImage();
+    if (!mounted) return;
+    if (value == null) return;
+
+    final fimg = File(value);
+    setState(() {
+      _imagePath = value;
+      _imagePreview = Image.file(fimg, fit: BoxFit.contain);
+    });
+  }
+
+  Future<void> _pickImageFromAssets() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Choose a built-in icon',
+                  style: Theme.of(ctx).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              Flexible(
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  itemCount: defaultImages.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                  ),
+                  itemBuilder: (ctx2, index) {
+                    final path = defaultImages[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => Navigator.of(ctx).pop(path),
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Image.asset(path, fit: BoxFit.contain),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+    if (picked == null) return;
+
+    setState(() {
+      _imagePath = picked;
+      _imagePreview = Image.asset(picked, fit: BoxFit.contain);
+    });
+  }
+
+  void _clearImage() {
+    setState(() {
+      _imagePath = null;
+      _imagePreview = null;
+    });
+  }
+
+  Future<void> _pickIcon() async {
+    final picked = await showDialog<IconData>(
+      context: context,
+      builder: (context) => IconPicker(initialIcon: _selectedIcon),
+    );
+
+    if (!mounted) return;
+    if (picked == null) return;
+
+    setState(() {
+      _selectedIcon = picked;
+    });
+  }
+
+  void _clearIcon() {
+    setState(() {
+      _selectedIcon = null;
+      _selectedIconColor = null;
+    });
+  }
+
+  Widget _sectionHeader(String title, {String? subtitle, IconData? icon}) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 20, color: theme.colorScheme.primary),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepProgress(ThemeData theme) {
+    final steps = <({String title, IconData icon})>[
+      (
+        title: context.l10n.buttonLabelStepTitle,
+        icon: Icons.label_outline,
+      ),
+      (
+        title: context.l10n.buttonColorStepTitle,
+        icon: Icons.palette_outlined,
+      ),
+      (
+        title: 'IR signal',
+        icon: Icons.settings_remote_outlined,
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+      child: Row(
+        children: List<Widget>.generate(steps.length, (index) {
+          final step = steps[index];
+          final selected = index == _currentStep;
+          final completed = index < _currentStep;
+          final cs = theme.colorScheme;
+          final bg = selected
+              ? cs.primaryContainer
+              : completed
+                  ? cs.secondaryContainer
+                  : cs.surfaceContainerHighest;
+          final fg = selected
+              ? cs.onPrimaryContainer
+              : completed
+                  ? cs.onSecondaryContainer
+                  : cs.onSurfaceVariant;
+
+          return Expanded(
+            child: Padding(
+              padding:
+                  EdgeInsets.only(right: index == steps.length - 1 ? 0 : 8),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: index <= _currentStep
+                    ? () => setState(() => _currentStep = index)
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: selected
+                          ? cs.primary.withValues(alpha: 0.24)
+                          : cs.outlineVariant.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        completed ? Icons.check_circle_rounded : step.icon,
+                        size: 18,
+                        color: fg,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        step.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: fg,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _chip(String text, {IconData? icon}) {
+    return Chip(
+      visualDensity: VisualDensity.compact,
+      avatar: icon == null ? null : Icon(icon, size: 16),
+      label: Text(text),
+    );
+  }
+
+  Widget _colorOption(Color? color, String label, ThemeData theme) {
+    final normalizedOption =
+        color == null ? null : normalizeAccessibleButtonColor(color);
+    final isSelected = normalizedOption == null
+        ? _selectedColor == null
+        : _selectedColor?.toARGB32() == normalizedOption.toARGB32();
+    final displayColor =
+        normalizedOption ?? theme.colorScheme.surfaceContainerHighest;
+    final checkColor = normalizedOption == null
+        ? theme.colorScheme.onSurface
+        : resolveButtonForeground(normalizedOption, Colors.white);
+
+    return Semantics(
+      button: true,
+      label: isSelected
+          ? context.l10n.buttonColorSemanticsSelected(label)
+          : context.l10n.buttonColorSemantics(label),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedColor = normalizedOption;
+          });
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 60, minHeight: 60),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: displayColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                    width: isSelected ? 3 : 1,
+                  ),
+                ),
+                child: isSelected
+                    ? Icon(
+                        Icons.check,
+                        color: checkColor,
+                        size: 20,
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  int? get _selectedButtonColorValue => _selectedColor == null
+      ? null
+      : normalizeAccessibleButtonColor(_selectedColor!).toARGB32();
+
+  int? get _selectedIconColorValue => _selectedIconColor == null
+      ? null
+      : normalizeAccessibleButtonColor(_selectedIconColor!).toARGB32();
+
+  Widget _iconColorOption(Color? color, String label, ThemeData theme) {
+    final normalizedOption =
+        color == null ? null : normalizeAccessibleButtonColor(color);
+    final isSelected = normalizedOption == null
+        ? _selectedIconColor == null
+        : _selectedIconColor?.toARGB32() == normalizedOption.toARGB32();
+    final previewColor = normalizedOption ?? theme.colorScheme.onSurface;
+
+    return Semantics(
+      button: true,
+      label: isSelected
+          ? context.l10n.iconColorSemanticsSelected(label)
+          : context.l10n.iconColorSemantics(label),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedIconColor = normalizedOption;
+          });
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 60, minHeight: 60),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                    width: isSelected ? 3 : 1,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    _selectedIcon ?? Icons.power_settings_new_rounded,
+                    size: 20,
+                    color: previewColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSignalSummaryChips() {
+    final List<Widget> chips = [];
+
+    if (_signalType == _SignalType.hex) {
+      chips.add(_chip('HEX / NEC', icon: Icons.numbers));
+      if (useCustomNec) {
+        chips.add(_chip('Custom timings', icon: Icons.tune));
+        chips.add(
+          _chip(_necBitOrderLabel(_necBitOrder), icon: Icons.swap_horiz),
+        );
+        final f = int.tryParse(hexFreqController.text.trim());
+        if (f != null && f > 0) {
+          chips.add(_chip('${(f / 1000).round()} kHz', icon: Icons.waves));
+        }
+      } else {
+        chips.add(_chip('Default 38 kHz', icon: Icons.waves));
+        chips.add(_chip('MSB (compat)', icon: Icons.swap_horiz));
+      }
+    } else if (_signalType == _SignalType.raw) {
+      chips.add(_chip('RAW', icon: Icons.graphic_eq));
+      final f = int.tryParse(freqController.text.trim());
+      if (f != null && f > 0) {
+        chips.add(_chip('${(f / 1000).round()} kHz', icon: Icons.waves));
+      }
+    } else {
+      final name = IrProtocolRegistry.displayName(_selectedProtocolId);
+      chips.add(_chip('PROTOCOL', icon: Icons.tune));
+      chips.add(_chip(name, icon: Icons.settings_remote_outlined));
+      final implemented = IrProtocolRegistry.isImplemented(_selectedProtocolId);
+      if (!implemented) {
+        chips.add(_chip('Not implemented', icon: Icons.hourglass_empty));
+      }
+      final f = int.tryParse(protoFreqController.text.trim());
+      if (f != null && f > 0) {
+        chips.add(_chip('${(f / 1000).round()} kHz', icon: Icons.waves));
+      }
+    }
+
+    return chips;
+  }
+
+  IRButton _draftButtonForPreview() {
+    final String labelValue = (_labelType == _LabelType.image)
+        ? (_imagePath ?? '')
+        : nameController.text.trim();
+
+    if (_signalType == _SignalType.hex) {
+      final int parsedHex =
+          int.tryParse(codeController.text.trim(), radix: 16) ?? 0;
+
+      String? rawDataForNec;
+      int? freqForNec;
+      String? bitOrder;
+
+      if (useCustomNec) {
+        final hMark = int.tryParse(headerMarkCtrl.text.trim()) ??
+            NECParams.defaults.headerMark;
+        final hSpace = int.tryParse(headerSpaceCtrl.text.trim()) ??
+            NECParams.defaults.headerSpace;
+        final bMark =
+            int.tryParse(bitMarkCtrl.text.trim()) ?? NECParams.defaults.bitMark;
+        final zSpace = int.tryParse(zeroSpaceCtrl.text.trim()) ??
+            NECParams.defaults.zeroSpace;
+        final oSpace = int.tryParse(oneSpaceCtrl.text.trim()) ??
+            NECParams.defaults.oneSpace;
+        final tMark = int.tryParse(trailerMarkCtrl.text.trim()) ??
+            NECParams.defaults.trailerMark;
+
+        rawDataForNec =
+            "NEC:h=$hMark,$hSpace;b=$bMark,$zSpace,$oSpace;t=$tMark";
+        freqForNec = int.tryParse(hexFreqController.text.trim()) ??
+            kDefaultNecFrequencyHz;
+        bitOrder = _encodeNecBitOrder(_necBitOrder);
+      }
+
+      return IRButton(
+        id: _buttonId,
+        code: parsedHex,
+        rawData: rawDataForNec,
+        frequency: rawDataForNec != null ? freqForNec : null,
+        image: labelValue,
+        isImage: _labelType == _LabelType.image,
+        necBitOrder: bitOrder,
+        iconCodePoint:
+            _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+        iconFontFamily:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+        iconFontPackage:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+        buttonColor: _selectedButtonColorValue,
+        iconColor: _selectedIconColorValue,
+      );
+    }
+
+    if (_signalType == _SignalType.raw) {
+      final int freq =
+          int.tryParse(freqController.text.trim()) ?? kDefaultNecFrequencyHz;
+      return IRButton(
+        id: _buttonId,
+        code: null,
+        rawData: rawDataController.text.trim(),
+        frequency: freq,
+        image: labelValue,
+        isImage: _labelType == _LabelType.image,
+        iconCodePoint:
+            _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+        iconFontFamily:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+        iconFontPackage:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+        buttonColor: _selectedButtonColorValue,
+        iconColor: _selectedIconColorValue,
+      );
+    }
+
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+    final Map<String, dynamic> params = <String, dynamic>{};
+
+    if (def != null) {
+      for (final field in def.fields) {
+        final c = _protoControllers[field.id];
+        if (c == null) continue;
+
+        final t = c.text.trim();
+        if (t.isEmpty) continue;
+
+        if (field.type == IrFieldType.intDecimal) {
+          final v = int.tryParse(t);
+          if (v != null) params[field.id] = v;
+        } else if (field.type == IrFieldType.intHex) {
+          final v = int.tryParse(t, radix: 16);
+          if (v != null) params[field.id] = v;
+        } else if (field.type == IrFieldType.boolean) {
+          params[field.id] = _coerceBool(t);
+        } else {
+          params[field.id] = t;
+        }
+      }
+    }
+
+    final int? f = protoFreqController.text.trim().isEmpty
+        ? null
+        : int.tryParse(protoFreqController.text.trim());
+
+    return IRButton(
+      id: _buttonId,
+      code: null,
+      rawData: null,
+      frequency: f,
+      image: labelValue,
+      isImage: _labelType == _LabelType.image,
+      protocol: _selectedProtocolId,
+      protocolParams: params,
+      iconCodePoint:
+          _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+      iconFontFamily:
+          _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+      iconFontPackage:
+          _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+      iconColor: _selectedIconColorValue,
+      buttonColor: _selectedButtonColorValue,
+    );
+  }
+
+  Future<void> _dbEnsureReady() async {
+    if (_dbInit) return;
+
+    setState(() => _dbMetaLoading = true);
+    try {
+      await IrBlasterDb.instance.ensureInitialized();
+      _dbInit = true;
+    } finally {
+      if (mounted) setState(() => _dbMetaLoading = false);
+    }
+  }
+
+  void _onDbScroll() {
+    if (!_tabDatabase) return;
+    if (_dbLoading || _dbExhausted) return;
+    if (!_dbScrollCtl.hasClients) return;
+
+    if (_dbScrollCtl.position.pixels >=
+        _dbScrollCtl.position.maxScrollExtent - 240) {
+      _dbReloadKeys(reset: false);
+    }
+  }
+
+  String _normalizeProtoKey(String s) {
+    return s.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+  }
+
+  String? _mapDbProtocolToAppProtocolId(String dbProtocol) {
+    final key = _normalizeProtoKey(dbProtocol);
+    final defs = IrProtocolRegistry.allDefinitions();
+
+    for (final d in defs) {
+      final idKey = _normalizeProtoKey(d.id);
+      final nameKey = _normalizeProtoKey(d.displayName);
+      if (idKey == key || nameKey == key) return d.id;
+    }
+    return null;
+  }
+
+  bool _dbProtocolIsNec(String dbProtocol) {
+    final k = _normalizeProtoKey(dbProtocol);
+    return k == 'nec' || k.startsWith('nec');
+  }
+
+  String _dbPresetToQuery(_DbPreset preset) {
+    switch (preset) {
+      case _DbPreset.power:
+        return 'power';
+      case _DbPreset.volume:
+        return 'vol';
+      case _DbPreset.channel:
+        return 'ch';
+      case _DbPreset.navigation:
+        return 'menu';
+      case _DbPreset.all:
+        return '';
+    }
+  }
+
+  String _dbEffectiveSearch() {
+    final manual = _dbSearchCtl.text.trim();
+    if (manual.isNotEmpty) return manual;
+    return _dbPresetToQuery(_dbPreset);
+  }
+
+  String _dbPresetTitle(_DbPreset preset) {
+    switch (preset) {
+      case _DbPreset.power:
+        return context.l10n.presetPower;
+      case _DbPreset.volume:
+        return context.l10n.presetVolume;
+      case _DbPreset.channel:
+        return context.l10n.presetChannel;
+      case _DbPreset.navigation:
+        return context.l10n.presetNavigation;
+      case _DbPreset.all:
+        return context.l10n.all;
+    }
+  }
+
+  IconData _dbPresetIcon(_DbPreset preset) {
+    switch (preset) {
+      case _DbPreset.power:
+        return Icons.power_settings_new_rounded;
+      case _DbPreset.volume:
+        return Icons.volume_up_rounded;
+      case _DbPreset.channel:
+        return Icons.live_tv_rounded;
+      case _DbPreset.navigation:
+        return Icons.gamepad_rounded;
+      case _DbPreset.all:
+        return Icons.list_alt_rounded;
+    }
+  }
+
+  Future<void> _dbLoadProtocolsForSelection() async {
+    if (_dbBrand == null || _dbModel == null) return;
+
+    setState(() {
+      _dbMetaLoading = true;
+      _dbProtocols = <String>[];
+      _dbProtocol = null;
+      _dbSelected = null;
+    });
+
+    try {
+      await _dbEnsureReady();
+
+      final prots = await IrBlasterDb.instance.listProtocolsFor(
+        brand: _dbBrand!,
+        model: _dbModel!,
+      );
+
+      setState(() {
+        _dbProtocols = prots;
+        _dbProtocol = prots.isNotEmpty ? prots.first : null;
+      });
+    } catch (e) {
+      if (mounted) _showSnack(context.l10n.failedToLoadProtocols(e.toString()));
+    } finally {
+      if (mounted) setState(() => _dbMetaLoading = false);
+    }
+  }
+
+  Future<void> _dbReloadKeys({required bool reset}) async {
+    if (_dbBrand == null || _dbModel == null) return;
+    if (_dbProtocol == null || _dbProtocol!.trim().isEmpty) return;
+    if (!reset && (_dbLoading || _dbExhausted)) return;
+
+    final int requestGeneration =
+        reset ? ++_dbLoadGeneration : _dbLoadGeneration;
+    if (reset) {
+      setState(() {
+        _dbOffset = 0;
+        _dbRows.clear();
+        _dbExhausted = false;
+        _dbSelected = null;
+      });
+    }
+
+    setState(() => _dbLoading = true);
+
+    try {
+      await _dbEnsureReady();
+
+      final search = _dbEffectiveSearch();
+      final offset = reset ? 0 : _dbOffset;
+
+      final rows = await IrBlasterDb.instance.fetchCandidateKeys(
+        brand: _dbBrand!,
+        model: _dbModel!,
+        selectedProtocolId: _dbProtocol,
+        quickWinsFirst: true,
+        hexPrefixUpper: null,
+        search: search,
+        limit: 60,
+        offset: offset,
+      );
+
+      if (!mounted || requestGeneration != _dbLoadGeneration) return;
+      setState(() {
+        _dbRows.addAll(rows);
+        _dbOffset = offset + rows.length;
+        if (rows.isEmpty) _dbExhausted = true;
+      });
+    } catch (e) {
+      if (mounted && requestGeneration == _dbLoadGeneration) {
+        _showSnack(context.l10n.failedToLoadDatabaseKeys(e.toString()));
+      }
+    } finally {
+      if (mounted && requestGeneration == _dbLoadGeneration) {
+        setState(() => _dbLoading = false);
+      }
+    }
+  }
+
+  void _queueDbSearchReload() {
+    _dbSearchDebounce?.cancel();
+    _dbSearchDebounce = Timer(const Duration(milliseconds: 280), () {
+      if (!mounted) return;
+      _dbReloadKeys(reset: true);
+    });
+  }
+
+  void _runDbSearchNow() {
+    _dbSearchDebounce?.cancel();
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_dbBrand == null || _dbModel == null || _dbProtocol == null) return;
+    _dbReloadKeys(reset: true);
+  }
+
+  Future<String?> _pickBrand(BuildContext context) async {
+    await IrBlasterDb.instance.ensureInitialized();
+    if (!context.mounted) return null;
+
+    String? selected;
+    int offset = 0;
+    final items = <String>[];
+    bool alive = true;
+    final ctl = TextEditingController();
+    final scrollCtl = ScrollController();
+    Timer? searchDebounce;
+    bool attachedScrollListener = false;
+    bool loading = false;
+    bool exhausted = false;
+    int generation = 0;
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (ctx) {
+          Future<void> load(StateSetter setModal, {required bool reset}) async {
+            if (!alive) return;
+            if (!reset && loading) return;
+
+            final requestGeneration = reset ? ++generation : generation;
+            setModal(() => loading = true);
+
+            try {
+              if (reset) {
+                offset = 0;
+                exhausted = false;
+                items.clear();
+                if (scrollCtl.hasClients) scrollCtl.jumpTo(0);
+              }
+
+              final next = await IrBlasterDb.instance.listBrands(
+                search: ctl.text.trim(),
+                limit: 60,
+                offset: offset,
+              );
+
+              if (!alive || requestGeneration != generation) return;
+
+              items.addAll(next);
+              offset += next.length;
+              if (next.isEmpty) exhausted = true;
+
+              setModal(() {});
+            } finally {
+              if (alive && requestGeneration == generation) {
+                setModal(() => loading = false);
+              }
+            }
+          }
+
+          void queueSearch(StateSetter setModal) {
+            searchDebounce?.cancel();
+            searchDebounce = Timer(const Duration(milliseconds: 220), () {
+              if (!alive) return;
+              load(setModal, reset: true);
+            });
+          }
+
+          void onScroll(StateSetter setModal) {
+            if (loading || exhausted) return;
+            if (scrollCtl.position.pixels >=
+                scrollCtl.position.maxScrollExtent - 240) {
+              load(setModal, reset: false);
+            }
+          }
+
+          return StatefulBuilder(
+            builder: (ctx2, setModal) {
+              if (!attachedScrollListener) {
+                attachedScrollListener = true;
+                scrollCtl.addListener(() => onScroll(setModal));
+                load(setModal, reset: true);
+              }
+
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              context.l10n.selectBrand,
+                              style: Theme.of(ctx2).textTheme.titleLarge,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              alive = false;
+                              Navigator.of(ctx2).pop();
+                            },
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: ctl,
+                        decoration: InputDecoration(
+                          hintText: context.l10n.searchBrand,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          border: const OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.search,
+                        onChanged: (_) => queueSearch(setModal),
+                        onSubmitted: (_) {
+                          searchDebounce?.cancel();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          load(setModal, reset: true);
+                        },
+                        onTapOutside: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollCtl,
+                          itemCount: items.length + (loading ? 1 : 0),
+                          separatorBuilder: (_, __) => const Divider(height: 0),
+                          itemBuilder: (ctx3, i) {
+                            if (i >= items.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                              );
+                            }
+                            final b = items[i];
+                            return ListTile(
+                              title: Text(b),
+                              onTap: () {
+                                selected = b;
+                                alive = false;
+                                Navigator.of(ctx2).pop();
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      alive = false;
+      searchDebounce?.cancel();
+      ctl.dispose();
+      scrollCtl.dispose();
+    }
+
+    return selected;
+  }
+
+  Future<String?> _pickModel(BuildContext context,
+      {required String brand}) async {
+    await IrBlasterDb.instance.ensureInitialized();
+    if (!context.mounted) return null;
+
+    String? selected;
+    int offset = 0;
+    final items = <String>[];
+    bool alive = true;
+    final ctl = TextEditingController();
+    final scrollCtl = ScrollController();
+    Timer? searchDebounce;
+    bool attachedScrollListener = false;
+    bool loading = false;
+    bool exhausted = false;
+    int generation = 0;
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (ctx) {
+          Future<void> load(StateSetter setModal, {required bool reset}) async {
+            if (!alive) return;
+            if (!reset && loading) return;
+
+            final requestGeneration = reset ? ++generation : generation;
+            setModal(() => loading = true);
+
+            try {
+              if (reset) {
+                offset = 0;
+                exhausted = false;
+                items.clear();
+                if (scrollCtl.hasClients) scrollCtl.jumpTo(0);
+              }
+
+              final next = await IrBlasterDb.instance.listModelsDistinct(
+                brand: brand,
+                search: ctl.text.trim(),
+                limit: 60,
+                offset: offset,
+              );
+
+              if (!alive || requestGeneration != generation) return;
+
+              items.addAll(next);
+              offset += next.length;
+              if (next.isEmpty) exhausted = true;
+
+              setModal(() {});
+            } finally {
+              if (alive && requestGeneration == generation) {
+                setModal(() => loading = false);
+              }
+            }
+          }
+
+          void queueSearch(StateSetter setModal) {
+            searchDebounce?.cancel();
+            searchDebounce = Timer(const Duration(milliseconds: 220), () {
+              if (!alive) return;
+              load(setModal, reset: true);
+            });
+          }
+
+          void onScroll(StateSetter setModal) {
+            if (loading || exhausted) return;
+            if (scrollCtl.position.pixels >=
+                scrollCtl.position.maxScrollExtent - 240) {
+              load(setModal, reset: false);
+            }
+          }
+
+          return StatefulBuilder(
+            builder: (ctx2, setModal) {
+              if (!attachedScrollListener) {
+                attachedScrollListener = true;
+                scrollCtl.addListener(() => onScroll(setModal));
+                load(setModal, reset: true);
+              }
+
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              context.l10n.selectModel,
+                              style: Theme.of(ctx2).textTheme.titleLarge,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              alive = false;
+                              Navigator.of(ctx2).pop();
+                            },
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: ctl,
+                        decoration: InputDecoration(
+                          hintText: context.l10n.searchModel,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          border: const OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.search,
+                        onChanged: (_) => queueSearch(setModal),
+                        onSubmitted: (_) {
+                          searchDebounce?.cancel();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          load(setModal, reset: true);
+                        },
+                        onTapOutside: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollCtl,
+                          itemCount: items.length + (loading ? 1 : 0),
+                          separatorBuilder: (_, __) => const Divider(height: 0),
+                          itemBuilder: (ctx3, i) {
+                            if (i >= items.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                              );
+                            }
+                            final m = items[i];
+                            return ListTile(
+                              title: Text(m),
+                              onTap: () {
+                                selected = m;
+                                alive = false;
+                                Navigator.of(ctx2).pop();
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      alive = false;
+      searchDebounce?.cancel();
+      ctl.dispose();
+      scrollCtl.dispose();
+    }
+
+    return selected;
+  }
+
+  Future<void> _dbSelectBrand() async {
+    await _dbEnsureReady();
+    if (!mounted) return;
+
+    final b = await _pickBrand(context);
+    if (!mounted) return;
+    if (b == null) return;
+
+    setState(() {
+      _dbBrand = b;
+      _dbModel = null;
+      _dbProtocols = <String>[];
+      _dbProtocol = null;
+
+      _dbSearchCtl.clear();
+      _dbRows.clear();
+
+      _dbSelected = null;
+      _dbOffset = 0;
+      _dbExhausted = false;
+
+      _dbPreset = _DbPreset.power;
+    });
+  }
+
+  Future<void> _dbSelectModel() async {
+    await _dbEnsureReady();
+    if (_dbBrand == null) return;
+    if (!mounted) return;
+
+    final m = await _pickModel(context, brand: _dbBrand!);
+    if (!mounted) return;
+    if (m == null) return;
+
+    setState(() {
+      _dbModel = m;
+      _dbProtocols = <String>[];
+      _dbProtocol = null;
+
+      _dbSearchCtl.clear();
+      _dbRows.clear();
+
+      _dbSelected = null;
+      _dbOffset = 0;
+      _dbExhausted = false;
+
+      _dbPreset = _DbPreset.power;
+    });
+
+    await _dbLoadProtocolsForSelection();
+    await _dbReloadKeys(reset: true);
+  }
+
+  Future<void> _dbSelectProtocol(String p) async {
+    if (_dbBrand == null || _dbModel == null) return;
+
+    setState(() {
+      _dbProtocol = p;
+      _dbRows.clear();
+      _dbSelected = null;
+      _dbOffset = 0;
+      _dbExhausted = false;
+    });
+
+    await _dbReloadKeys(reset: true);
+  }
+
+  Future<void> _dbSetPreset(_DbPreset preset) async {
+    if (_dbBrand == null || _dbModel == null) return;
+    if (_dbProtocol == null || _dbProtocol!.trim().isEmpty) return;
+
+    setState(() {
+      _dbPreset = preset;
+      _dbRows.clear();
+      _dbSelected = null;
+      _dbOffset = 0;
+      _dbExhausted = false;
+    });
+
+    await _dbReloadKeys(reset: true);
+  }
+
+  bool _idLooksLike(IrFieldDef f, String needle) {
+    final id = f.id.toLowerCase().trim();
+    final label = f.label.toLowerCase().trim();
+    return id == needle || id.contains(needle) || label.contains(needle);
+  }
+
+  void _fillProtocolFieldsFromDbHex(String hexClean) {
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+    if (def == null) return;
+
+    final derived =
+        _deriveProtocolFieldTextFromHex(_selectedProtocolId, hexClean);
+    if (derived.isNotEmpty) {
+      for (final e in derived.entries) {
+        final c = _protoControllers[e.key];
+        if (c != null) c.text = e.value;
+      }
+      return;
+    }
+
+    // Fallback: previous heuristic, but now include string fields too
+    final hex = _cleanHex(hexClean);
+    if (hex.isEmpty) return;
+
+    IrFieldDef? addr;
+    IrFieldDef? cmd;
+
+    for (final f in def.fields) {
+      if (addr == null && _idLooksLike(f, 'address')) addr = f;
+      if (cmd == null &&
+          (_idLooksLike(f, 'command') || _idLooksLike(f, 'cmd'))) {
+        cmd = f;
+      }
+    }
+
+    if (addr != null && cmd != null) {
+      final addrCtl = _protoControllers[addr.id];
+      final cmdCtl = _protoControllers[cmd.id];
+      if (addrCtl != null && cmdCtl != null) {
+        final int aDigits = _expectedHexDigits(addr) ?? 2;
+        final int cDigits = _expectedHexDigits(cmd) ?? 2;
+        final int totalDigits = aDigits + cDigits;
+        final String splitHex =
+            (hex.length < totalDigits) ? hex.padLeft(totalDigits, '0') : hex;
+
+        if (splitHex.length >= totalDigits) {
+          String aVal = '';
+          String cVal = '';
+
+          final bool invertedLayout =
+              (aDigits == cDigits) && (splitHex.length == totalDigits * 2);
+          if (invertedLayout) {
+            aVal = splitHex.substring(0, aDigits);
+            final int cmdOff = 2 * aDigits;
+            if (splitHex.length >= cmdOff + cDigits) {
+              cVal = splitHex.substring(cmdOff, cmdOff + cDigits);
+            } else {
+              cVal = splitHex.substring(aDigits, aDigits + cDigits);
+            }
+          } else {
+            aVal = splitHex.substring(0, aDigits);
+            cVal = splitHex.substring(aDigits, aDigits + cDigits);
+          }
+
+          addrCtl.text =
+              _wantsSpacedBytes(addr) ? _formatBytesSpaced(aVal) : aVal;
+          cmdCtl.text =
+              _wantsSpacedBytes(cmd) ? _formatBytesSpaced(cVal) : cVal;
+          return;
+        }
+      }
+    }
+
+    // Find best single hex-like field (string OR intHex)
+    IrFieldDef? target;
+    for (final f in def.fields) {
+      if (_idLooksLike(f, 'hex') ||
+          _idLooksLike(f, 'code') ||
+          _idLooksLike(f, 'value')) {
+        target = f;
+        break;
+      }
+    }
+    target ??= def.fields.isNotEmpty ? def.fields.first : null;
+    if (target == null) return;
+
+    final c = _protoControllers[target.id];
+    if (c == null) return;
+
+    int? maxDigits = _expectedHexDigits(target);
+    String v = hex;
+    if (maxDigits != null && maxDigits > 0 && v.length > maxDigits) {
+      v = v.substring(v.length - maxDigits);
+    }
+
+    c.text = _wantsSpacedBytes(target) ? _formatBytesSpaced(v) : v;
+  }
+
+  Future<void> _dbUseSelectedKey() async {
+    final sel = _dbSelected;
+    if (sel == null) return;
+
+    final protoDb = sel.protocol.trim();
+    final hexClean = sel.hexcode.replaceAll(' ', '').toUpperCase();
+    final labelTrim = (sel.label ?? '').trim();
+
+    setState(() {
+      if (_labelType == _LabelType.text && nameController.text.trim().isEmpty) {
+        nameController.text = labelTrim;
+      } else {
+        if (nameController.text.trim().isEmpty && labelTrim.isNotEmpty) {
+          nameController.text = labelTrim;
+        }
+      }
+      _tabDatabase = false;
+    });
+
+    if (protoDb.isEmpty) {
+      setState(() {
+        _signalType = _SignalType.hex;
+        codeController.text = hexClean;
+      });
+      _showSnack('Protocol missing in database row. Imported as HEX.');
+      if (!_hasLabel) {
+        _showSnack('Step 1 still requires a label (icon or text).');
+      }
+      return;
+    }
+
+    if (_dbProtocolIsNec(protoDb)) {
+      setState(() {
+        _signalType = _SignalType.hex;
+        codeController.text = hexClean;
+      });
+      if (!_hasLabel) {
+        _showSnack(
+            'IR code imported. Step 1 still requires a label (icon or text).');
+      } else {
+        _showSnack('Imported from database.');
+      }
+      return;
+    }
+
+    final mapped = _mapDbProtocolToAppProtocolId(protoDb);
+    if (mapped == null) {
+      setState(() {
+        _signalType = _SignalType.hex;
+        codeController.text = hexClean;
+      });
+      _showSnack(
+          'Protocol "$protoDb" is not mapped. Imported as HEX. You can adjust in Manual.');
+      return;
+    }
+
+    setState(() {
+      _signalType = _SignalType.protocol;
+      _selectedProtocolId = mapped;
+      _syncProtocolControllersFromDefinition(const <String, dynamic>{});
+    });
+
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+    if (def != null) {
+      if (protoFreqController.text.trim().isEmpty &&
+          def.defaultFrequencyHz > 0) {
+        protoFreqController.text = def.defaultFrequencyHz.toString();
+      }
+      _fillProtocolFieldsFromDbHex(hexClean);
+      _showSnack('Imported from database.');
+    } else {
+      _showSnack(
+          'Imported protocol "$protoDb", but no field definition exists. Please configure manually.');
+    }
+
+    if (!_hasLabel) {
+      _showSnack('Step 1 still requires a label (icon or text).');
+    }
+  }
+
+  Widget _dbField({
+    required String label,
+    required IconData icon,
+    required String value,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: enabled ? onTap : null,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: const OutlineInputBorder(),
+          enabled: enabled,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: value.startsWith('Select')
+                      ? FontWeight.w500
+                      : FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: theme.colorScheme.onSurface
+                  .withValues(alpha: enabled ? 0.75 : 0.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDbPresetBar({required bool enabled}) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    Widget chip(_DbPreset p) {
+      final selected = _dbPreset == p;
+      return ChoiceChip(
+        selected: selected,
+        showCheckmark: false,
+        label: Text(_dbPresetTitle(p)),
+        avatar: Icon(_dbPresetIcon(p), size: 18),
+        onSelected: enabled
+            ? (v) {
+                if (!v) return;
+                _dbSetPreset(p);
+              }
+            : null,
+        visualDensity: VisualDensity.compact,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flash_on_rounded, color: cs.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.quickPresets,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ),
+              if (!enabled)
+                Text(
+                  context.l10n.selectDeviceFirst,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: cs.onSurface.withValues(alpha: 0.65),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Start with common keys. Tap “All” for the full list.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: cs.onSurface.withValues(alpha: 0.78),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              chip(_DbPreset.power),
+              chip(_DbPreset.volume),
+              chip(_DbPreset.channel),
+              chip(_DbPreset.navigation),
+              chip(_DbPreset.all),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDbTab() {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    final bool hasBrand = (_dbBrand != null && _dbBrand!.trim().isNotEmpty);
+    final bool hasModel = (_dbModel != null && _dbModel!.trim().isNotEmpty);
+    final bool hasProtocol =
+        (_dbProtocol != null && _dbProtocol!.trim().isNotEmpty);
+    final bool canBrowseKeys = hasBrand && hasModel && hasProtocol;
+
+    final String effectiveSearch = _dbEffectiveSearch();
+
+    final String searchHint = canBrowseKeys
+        ? (_dbSearchCtl.text.trim().isNotEmpty
+            ? context.l10n.searchByLabelOrHex
+            : (_dbPreset == _DbPreset.all
+                ? context.l10n.searchByLabelOrHex
+                : context.l10n
+                    .optionalRefinePresetKeys(_dbPresetTitle(_dbPreset))))
+        : context.l10n.selectBrandModelProtocolFirst;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.8)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.auto_awesome, color: cs.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.databaseModeAutofillHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: cs.onSurface.withValues(alpha: 0.8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (_dbMetaLoading) ...[
+          const LinearProgressIndicator(minHeight: 2),
+          const SizedBox(height: 12),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: _dbField(
+                label: context.l10n.brand,
+                icon: Icons.factory_outlined,
+                value: hasBrand ? _dbBrand! : context.l10n.selectBrand,
+                enabled: true,
+                onTap: _dbSelectBrand,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _dbField(
+                label: context.l10n.model,
+                icon: Icons.devices_other_outlined,
+                value: hasModel ? _dbModel! : context.l10n.selectModel,
+                enabled: hasBrand,
+                onTap: _dbSelectModel,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (hasBrand && hasModel) ...[
+          if (_dbProtocols.isEmpty && !_dbMetaLoading) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cs.secondaryContainer.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                context.l10n.noProtocolFoundForBrandModel,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: cs.onSecondaryContainer,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ] else ...[
+            DropdownButtonFormField<String>(
+              initialValue: _dbProtocol,
+              isExpanded: true,
+              items: _dbProtocols
+                  .map((p) => DropdownMenuItem<String>(
+                        value: p,
+                        child: Text(p),
+                      ))
+                  .toList(growable: false),
+              onChanged: (v) {
+                if (v == null) return;
+                _dbSelectProtocol(v);
+              },
+              decoration: InputDecoration(
+                labelText: context.l10n.protocolAutoDetected,
+                border: const OutlineInputBorder(),
+                helperText: context.l10n.protocolAutoDetectedHelper,
+                helperMaxLines: _kHelperMaxLines,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+        ],
+        _buildDbPresetBar(enabled: canBrowseKeys),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _dbSearchCtl,
+          enabled: canBrowseKeys,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            hintText: searchHint,
+            prefixIcon: const Icon(Icons.search_rounded),
+            border: const OutlineInputBorder(),
+            suffixIcon: (!canBrowseKeys || _dbSearchCtl.text.trim().isEmpty)
+                ? null
+                : IconButton(
+                    tooltip: context.l10n.clearAction,
+                    onPressed: () {
+                      setState(() => _dbSearchCtl.clear());
+                      _runDbSearchNow();
+                    },
+                    icon: const Icon(Icons.clear),
+                  ),
+          ),
+          onChanged: (_) {
+            if (!canBrowseKeys) return;
+            _queueDbSearchReload();
+          },
+          onSubmitted: (_) => _runDbSearchNow(),
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          constraints: const BoxConstraints(minHeight: 120, maxHeight: 360),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.8)),
+          ),
+          child: !canBrowseKeys
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Text(
+                      context.l10n.selectBrandModelToLoadKeys,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: cs.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                )
+              : (_dbRows.isEmpty && _dbLoading)
+                  ? const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : (_dbRows.isEmpty)
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Text(
+                              effectiveSearch.isEmpty
+                                  ? context.l10n.noKeysFound
+                                  : context.l10n
+                                      .noKeysFoundForSearch(effectiveSearch),
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurface.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          controller: _dbScrollCtl,
+                          itemCount: _dbRows.length + (_dbLoading ? 1 : 0),
+                          separatorBuilder: (_, __) => const Divider(height: 0),
+                          itemBuilder: (ctx, i) {
+                            if (i >= _dbRows.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                              );
+                            }
+
+                            final r = _dbRows[i];
+
+                            final bool selected =
+                                (_dbSelected?.remoteId == r.remoteId) &&
+                                    (_dbSelected?.hexcode == r.hexcode) &&
+                                    (_dbSelected?.label == r.label);
+
+                            final String labelText = r.label?.trim() ?? '';
+                            final String protocolText = r.protocol.trim();
+                            final String titleText = labelText.isEmpty
+                                ? context.l10n.unnamedKey
+                                : labelText;
+                            final String protoText = protocolText.isEmpty
+                                ? context.l10n.unknownLabel
+                                : protocolText;
+                            final String hexText = r.hexcode.trim().isEmpty
+                                ? '—'
+                                : r.hexcode.trim();
+
+                            return ListTile(
+                              selected: selected,
+                              leading: Icon(
+                                selected
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_off,
+                                color: selected
+                                    ? cs.primary
+                                    : cs.onSurface.withValues(alpha: 0.5),
+                              ),
+                              title: Text(titleText),
+                              subtitle: Text('$hexText · $protoText'),
+                              trailing: IconButton(
+                                tooltip: context.l10n.copyCode,
+                                icon: const Icon(Icons.copy_rounded),
+                                onPressed: () => Clipboard.setData(
+                                  ClipboardData(text: '$protoText:$hexText'),
+                                ),
+                              ),
+                              onTap: () => setState(() => _dbSelected = r),
+                            );
+                          },
+                        ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _dbSelected == null
+                    ? null
+                    : () => setState(() => _dbSelected = null),
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear selection'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: _dbSelected == null ? null : _dbUseSelectedKey,
+                icon: const Icon(Icons.download_done_rounded),
+                label: const Text('Import key'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHexSection() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: codeController,
+          maxLength: 8,
+          maxLines: 1,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 18,
+            letterSpacing: 1.1,
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp("[0-9a-fA-F]")),
+          ],
+          decoration: InputDecoration(
+            labelText: 'Hex code (NEC)',
+            helperText: '8 hex digits (example: 00F700FF).',
+            helperMaxLines: _kHelperMaxLines,
+            hintMaxLines: _kHintMaxLines,
+            errorText: (_signalType == _SignalType.hex && !_hexLooksValid)
+                ? 'Enter a valid hex code.'
+                : null,
+            errorMaxLines: _kErrorMaxLines,
+            suffixIcon: SizedBox(
+              width: 144,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    tooltip: 'Paste',
+                    onPressed: () => _pasteInto(codeController, hexOnly: true),
+                    icon: const Icon(Icons.content_paste_outlined),
+                  ),
+                  IconButton(
+                    tooltip: 'Finder',
+                    onPressed: () async {
+                      try {
+                        final String a = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CodeTest(
+                              code: codeController.value.text.padLeft(8, '0'),
+                            ),
+                          ),
+                        );
+                        codeController.text = a.replaceAll(" ", "");
+                      } catch (_) {}
+                    },
+                    icon: const Icon(Icons.search),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Legacy NEC behavior remains unchanged for existing saved buttons.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNecAdvancedSection() {
+    final theme = Theme.of(context);
+
+    return ExpansionTile(
+      initiallyExpanded: useCustomNec,
+      title: const Text('Advanced (optional)'),
+      subtitle: Text(
+        useCustomNec
+            ? 'Custom NEC timings and carrier frequency'
+            : 'Use defaults unless a device requires custom timings',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+        ),
+      ),
+      childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text("Use custom NEC timings"),
+          subtitle: const Text(
+              "Stores a NEC:... config and transmits as raw with the chosen frequency."),
+          value: useCustomNec,
+          onChanged: (v) => setState(() => useCustomNec = v),
+        ),
+        if (!useCustomNec) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Defaults: 38 kHz carrier, standard NEC timings, MSB-first over stored value (compat).',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              ),
+            ),
+          ),
+        ],
+        if (useCustomNec) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Bit order',
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _NecBitOrder.values.map((value) {
+                return ChoiceChip(
+                  label: Text(_necBitOrderLabel(value)),
+                  selected: _necBitOrder == value,
+                  onSelected: (selected) {
+                    if (selected) setState(() => _necBitOrder = value);
+                  },
+                );
+              }).toList(growable: false),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: hexFreqController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: context.l10n.frequencyHzLabel,
+              helperText: context.l10n.carrierFrequencyHelper,
+              helperMaxLines: _kHelperMaxLines,
+              hintMaxLines: _kHintMaxLines,
+              errorText: !_customNecLooksValid
+                  ? context.l10n.validFrequencyError
+                  : null,
+              errorMaxLines: _kErrorMaxLines,
+              suffixIcon: IconButton(
+                tooltip: context.l10n.resetToDefaultFrequency,
+                onPressed: () => setState(() =>
+                    hexFreqController.text = kDefaultNecFrequencyHz.toString()),
+                icon: const Icon(Icons.restart_alt),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _timingsGrid(),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'MSB keeps existing behavior. Byte Swap preserves the previous LSB option. True LSB reverses bits within each byte for standard NEC receivers.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _timingsGrid() {
+    Widget numField(TextEditingController c, String label, String hint) {
+      return TextField(
+        controller: c,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          hintMaxLines: _kHintMaxLines,
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+                child: numField(headerMarkCtrl, "Header Mark (µs)", "9000")),
+            const SizedBox(width: 10),
+            Expanded(
+                child: numField(headerSpaceCtrl, "Header Space (µs)", "4500")),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: numField(bitMarkCtrl, "Bit Mark (µs)", "560")),
+            const SizedBox(width: 10),
+            Expanded(child: numField(zeroSpaceCtrl, "0 Space (µs)", "560")),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: numField(oneSpaceCtrl, "1 Space (µs)", "1690")),
+            const SizedBox(width: 10),
+            Expanded(
+                child: numField(trailerMarkCtrl, "Trailer Mark (µs)", "560")),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRawSection() {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: freqController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(
+            labelText: context.l10n.frequencyHzLabel,
+            helperText: context.l10n.requiredFrequencyHelper,
+            helperMaxLines: _kHelperMaxLines,
+            hintMaxLines: _kHintMaxLines,
+            errorText: (_signalType == _SignalType.raw && !_rawLooksValid)
+                ? context.l10n.validFrequencyError
+                : null,
+            errorMaxLines: _kErrorMaxLines,
+            suffixIcon: IconButton(
+              tooltip: context.l10n.resetToDefaultFrequency,
+              onPressed: () => setState(() => freqController.text = '38000'),
+              icon: const Icon(Icons.restart_alt),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: rawDataController,
+          maxLines: 4,
+          decoration: InputDecoration(
+            labelText: context.l10n.rawDataLabel,
+            helperText: context.l10n.rawDataHelper,
+            helperMaxLines: _kHelperMaxLines,
+            hintMaxLines: _kHintMaxLines,
+            errorText: (_signalType == _SignalType.raw && !_rawLooksValid)
+                ? context.l10n.rawDataInvalid
+                : null,
+            errorMaxLines: _kErrorMaxLines,
+            suffixIcon: IconButton(
+              tooltip: context.l10n.pasteTooltip,
+              onPressed: () => _pasteInto(rawDataController),
+              icon: const Icon(Icons.content_paste_outlined),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          context.l10n.rawDataSafeguard,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProtocolSection() {
+    final theme = Theme.of(context);
+
+    final defs = IrProtocolRegistry.allDefinitions();
+    final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+    final bool implemented =
+        IrProtocolRegistry.isImplemented(_selectedProtocolId);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String>(
+          initialValue: _selectedProtocolId,
+          isExpanded: true,
+          items: defs
+              .map(
+                (d) => DropdownMenuItem<String>(
+                  value: d.id,
+                  child: Text(d.displayName),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: (v) {
+            if (v == null) return;
+            setState(() {
+              _selectedProtocolId = v;
+              _syncProtocolControllersFromDefinition(const <String, dynamic>{});
+            });
+          },
+          decoration: InputDecoration(
+            labelText: context.l10n.protocolLabel,
+            helperText: context.l10n.protocolEncodingHelper,
+            helperMaxLines: _kHelperMaxLines,
+            hintMaxLines: _kHintMaxLines,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: protoFreqController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(
+            labelText: context.l10n.frequencyHzLabel,
+            helperText: context.l10n.protocolFrequencyHelper,
+            helperMaxLines: _kHelperMaxLines,
+            hintMaxLines: _kHintMaxLines,
+            errorText:
+                (_signalType == _SignalType.protocol && !_protocolLooksValid)
+                    ? context.l10n.protocolFieldsInvalid
+                    : null,
+            errorMaxLines: _kErrorMaxLines,
+            suffixIcon: IconButton(
+              tooltip: context.l10n.clearTooltip,
+              onPressed: () => setState(() => protoFreqController.clear()),
+              icon: const Icon(Icons.clear),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (!implemented) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color:
+                  theme.colorScheme.secondaryContainer.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Registered only. Transmit will show "Not implemented yet" until encoding is added.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (_selectedProtocolId == IrProtocolIds.sony12) ...[
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _enterPackedSony12Code,
+              icon: const Icon(Icons.input_rounded),
+              label: Text(context.l10n.editButtonCodeTitle),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (def != null) ...[
+          for (final field in def.fields) ...[
+            _buildProtocolField(field),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Future<void> _enterPackedSony12Code() async {
+    final address = int.tryParse(
+      _protoControllers['address']?.text.trim() ?? '',
+      radix: 16,
+    );
+    final command = int.tryParse(
+      _protoControllers['command']?.text.trim() ?? '',
+      radix: 16,
+    );
+    final initialCode = address == null || command == null
+        ? ''
+        : (((address & 0x1F) << 7) | (command & 0x7F))
+            .toRadixString(16)
+            .toUpperCase()
+            .padLeft(3, '0');
+    final controller = TextEditingController(text: initialCode);
+    final formKey = GlobalKey<FormState>();
+
+    final packedCode = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.editButtonCodeTitle),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 3,
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
+            ],
+            decoration: const InputDecoration(
+              labelText: 'SONY12',
+              hintText: 'A90',
+            ),
+            validator: (value) {
+              final text = value?.trim() ?? '';
+              final parsed = int.tryParse(text, radix: 16);
+              if (text.isEmpty || parsed == null || parsed > 0xFFF) {
+                return context.l10n.invalidCodeForProtocol('SONY12');
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogContext, controller.text.trim());
+              }
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.pop(dialogContext, controller.text.trim());
+              }
+            },
+            child: Text(context.l10n.saveAction),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (!mounted || packedCode == null) return;
+    setState(() => _fillProtocolFieldsFromDbHex(packedCode));
+  }
+
+  Widget _buildProtocolField(IrFieldDef field) {
+    final c = _protoControllers.putIfAbsent(field.id, () {
+      final ctrl = TextEditingController();
+      ctrl.addListener(() {
+        if (mounted) setState(() {});
+      });
+      return ctrl;
+    });
+
+    if (field.type == IrFieldType.choice) {
+      final opts = field.options;
+
+      String? current = c.text.trim().isEmpty ? null : c.text.trim();
+      if (current == null || !opts.contains(current)) {
+        final dynamic dv = field.defaultValue;
+        final String? fallback = (dv is String && opts.contains(dv))
+            ? dv
+            : (opts.isNotEmpty ? opts.first : null);
+
+        if (fallback != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final now = c.text.trim();
+            if (now.isEmpty || !opts.contains(now)) {
+              c.text = fallback;
+            }
+          });
+          current = fallback;
+        }
+      }
+
+      String? errorText;
+      if (_signalType == _SignalType.protocol && field.required) {
+        final val = (current ?? '').trim();
+        if (val.isEmpty) {
+          errorText = 'Required';
+        } else if (!opts.contains(val)) {
+          errorText = 'Invalid selection';
+        }
+      }
+
+      return DropdownButtonFormField<String>(
+        initialValue: opts.contains(current) ? current : null,
+        isExpanded: true,
+        items: opts
+            .map(
+              (o) => DropdownMenuItem<String>(
+                value: o,
+                child: Text(o),
+              ),
+            )
+            .toList(growable: false),
+        onChanged: (v) {
+          if (v == null) return;
+          setState(() => c.text = v);
+        },
+        decoration: InputDecoration(
+          labelText: field.label,
+          helperText: field.helperText,
+          helperMaxLines: _kHelperMaxLines,
+          hintMaxLines: _kHintMaxLines,
+          errorText: errorText,
+          errorMaxLines: _kErrorMaxLines,
+          suffixIcon: (!field.required && c.text.trim().isNotEmpty)
+              ? IconButton(
+                  tooltip: 'Clear',
+                  onPressed: () => setState(() => c.clear()),
+                  icon: const Icon(Icons.clear),
+                )
+              : null,
+        ),
+      );
+    }
+
+    if (field.type == IrFieldType.boolean) {
+      final bool value =
+          _coerceBool(c.text.trim().isEmpty ? field.defaultValue : c.text);
+      return SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(field.label),
+        subtitle: field.helperText == null ? null : Text(field.helperText!),
+        value: value,
+        onChanged: (v) => setState(() => c.text = v.toString()),
+      );
+    }
+
+    final bool isHex = field.type == IrFieldType.intHex;
+    final bool isDec = field.type == IrFieldType.intDecimal;
+
+    List<TextInputFormatter>? formatters;
+    TextInputType? keyboard;
+
+    if (isHex) {
+      formatters = [FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))];
+      keyboard = TextInputType.text;
+    } else if (isDec) {
+      formatters = [FilteringTextInputFormatter.digitsOnly];
+      keyboard = TextInputType.number;
+    } else {
+      keyboard = TextInputType.text;
+    }
+
+    String? errorText;
+    final t = c.text.trim();
+
+    if (_signalType == _SignalType.protocol && field.required && t.isEmpty) {
+      errorText = 'Required';
+    } else if (_signalType == _SignalType.protocol && t.isNotEmpty) {
+      if (isDec && int.tryParse(t) == null) errorText = 'Must be a number';
+      if (isHex && int.tryParse(t, radix: 16) == null) {
+        errorText = 'Must be hex';
+      }
+
+      if (errorText == null && (isDec || isHex)) {
+        final int? n = isHex ? int.tryParse(t, radix: 16) : int.tryParse(t);
+        if (n != null) {
+          if (field.min != null && n < field.min!) {
+            errorText = 'Min: ${field.min}';
+          }
+          if (field.max != null && n > field.max!) {
+            errorText = 'Max: ${field.max}';
+          }
+        }
+      }
+    }
+
+    return TextField(
+      controller: c,
+      maxLines: field.maxLines ?? 1,
+      maxLength: field.maxLength,
+      inputFormatters: formatters,
+      keyboardType: keyboard,
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.hint,
+        hintMaxLines: _kHintMaxLines,
+        helperText: field.helperText,
+        helperMaxLines: _kHelperMaxLines,
+        errorText: errorText,
+        errorMaxLines: _kErrorMaxLines,
+        suffixIcon: t.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Clear',
+                onPressed: () => setState(() => c.clear()),
+                icon: const Icon(Icons.clear),
+              ),
+      ),
+    );
+  }
+
+  void _onSavePressed() {
+    FocusScope.of(context).unfocus();
+
+    if (!_hasLabel) {
+      String message;
+      if (_labelType == _LabelType.image) {
+        message = "Please select an image, or switch to Icon/Text.";
+      } else if (_labelType == _LabelType.icon) {
+        message = "Please select an icon, or switch to Image/Text.";
+      } else {
+        message = "Please enter a label.";
+      }
+      _showSnack(message);
+      return;
+    }
+
+    final String labelValue = (_labelType == _LabelType.image)
+        ? (_imagePath ?? '')
+        : (_labelType == _LabelType.icon)
+            ? ''
+            : nameController.text.trim();
+
+    if (_signalType == _SignalType.hex) {
+      if (codeController.text.trim().isEmpty) {
+        _showSnack("Hex code cannot be empty.");
+        return;
+      }
+
+      final parsedHex = int.tryParse(codeController.text.trim(), radix: 16);
+      if (parsedHex == null) {
+        _showSnack("Hex code is invalid.");
+        return;
+      }
+
+      if (useCustomNec) {
+        final allNumeric = [
+          headerMarkCtrl.text,
+          headerSpaceCtrl.text,
+          bitMarkCtrl.text,
+          zeroSpaceCtrl.text,
+          oneSpaceCtrl.text,
+          trailerMarkCtrl.text,
+        ].every((t) => int.tryParse(t.trim()) != null);
+
+        if (!allNumeric) {
+          _showSnack(context.l10n.necTimingsNumeric);
+          return;
+        }
+
+        final f = int.tryParse(hexFreqController.text.trim());
+        if (f == null || f < kMinIrFrequencyHz || f > kMaxIrFrequencyHz) {
+          _showSnack(context.l10n.frequencyRangeError);
+          return;
+        }
+      }
+
+      String? rawDataForNec;
+      int? freqForNec;
+      String? bitOrder;
+
+      if (useCustomNec) {
+        final hMark = int.tryParse(headerMarkCtrl.text.trim()) ??
+            NECParams.defaults.headerMark;
+        final hSpace = int.tryParse(headerSpaceCtrl.text.trim()) ??
+            NECParams.defaults.headerSpace;
+        final bMark =
+            int.tryParse(bitMarkCtrl.text.trim()) ?? NECParams.defaults.bitMark;
+        final zSpace = int.tryParse(zeroSpaceCtrl.text.trim()) ??
+            NECParams.defaults.zeroSpace;
+        final oSpace = int.tryParse(oneSpaceCtrl.text.trim()) ??
+            NECParams.defaults.oneSpace;
+        final tMark = int.tryParse(trailerMarkCtrl.text.trim()) ??
+            NECParams.defaults.trailerMark;
+
+        rawDataForNec =
+            "NEC:h=$hMark,$hSpace;b=$bMark,$zSpace,$oSpace;t=$tMark";
+        freqForNec = int.tryParse(hexFreqController.text.trim()) ??
+            kDefaultNecFrequencyHz;
+        bitOrder = _encodeNecBitOrder(_necBitOrder);
+      }
+
+      final button = IRButton(
+        id: _buttonId,
+        code: parsedHex,
+        rawData: rawDataForNec,
+        frequency: rawDataForNec != null ? freqForNec : null,
+        image: labelValue,
+        isImage: _labelType == _LabelType.image,
+        necBitOrder: bitOrder,
+        iconCodePoint:
+            _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+        iconFontFamily:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+        iconFontPackage:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+        iconColor: _selectedIconColorValue,
+        buttonColor: _selectedButtonColorValue,
+      );
+
+      Navigator.pop(context, button);
+      return;
+    }
+
+    if (_signalType == _SignalType.raw) {
+      if (!_rawLooksValid) {
+        _showSnack(context.l10n.rawSignalInvalidWithFrequency);
+        return;
+      }
+
+      final int freq = int.parse(freqController.text.trim());
+
+      final button = IRButton(
+        id: _buttonId,
+        code: null,
+        rawData: rawDataController.text.trim(),
+        frequency: freq,
+        image: labelValue,
+        isImage: _labelType == _LabelType.image,
+        iconCodePoint:
+            _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+        iconFontFamily:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+        iconFontPackage:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+        iconColor: _selectedIconColorValue,
+        buttonColor: _selectedButtonColorValue,
+      );
+
+      Navigator.pop(context, button);
+      return;
+    }
+
+    if (_signalType == _SignalType.protocol) {
+      if (!_protocolLooksValid) {
+        _showSnack(context.l10n.protocolFieldsInvalid);
+        return;
+      }
+
+      final def = IrProtocolRegistry.definitionFor(_selectedProtocolId);
+      if (def == null) {
+        _showSnack(context.l10n.unknownProtocolSelected);
+        return;
+      }
+
+      final Map<String, dynamic> params = <String, dynamic>{};
+
+      for (final field in def.fields) {
+        final c = _protoControllers[field.id];
+        if (c == null) continue;
+
+        final t = c.text.trim();
+        if (t.isEmpty) continue;
+
+        if (field.type == IrFieldType.intDecimal) {
+          final v = int.tryParse(t);
+          if (v != null) params[field.id] = v;
+        } else if (field.type == IrFieldType.intHex) {
+          final v = int.tryParse(t, radix: 16);
+          if (v != null) params[field.id] = v;
+        } else if (field.type == IrFieldType.boolean) {
+          params[field.id] = _coerceBool(t);
+        } else {
+          params[field.id] = t;
+        }
+      }
+
+      final int? f = protoFreqController.text.trim().isEmpty
+          ? null
+          : int.tryParse(protoFreqController.text.trim());
+
+      final button = IRButton(
+        id: _buttonId,
+        code: null,
+        rawData: null,
+        frequency: f,
+        image: labelValue,
+        isImage: _labelType == _LabelType.image,
+        protocol: _selectedProtocolId,
+        protocolParams: params,
+        iconCodePoint:
+            _labelType == _LabelType.icon ? _selectedIcon?.codePoint : null,
+        iconFontFamily:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontFamily : null,
+        iconFontPackage:
+            _labelType == _LabelType.icon ? _selectedIcon?.fontPackage : null,
+        iconColor: _selectedIconColorValue,
+        buttonColor: _selectedButtonColorValue,
+      );
+
+      Navigator.pop(context, button);
+      return;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorChoices = <({Color color, String label})>[
+      (color: Colors.red, label: context.l10n.colorRed),
+      (color: Colors.pink, label: context.l10n.colorPink),
+      (color: Colors.purple, label: context.l10n.colorPurple),
+      (color: Colors.deepPurple, label: context.l10n.colorDeepPurple),
+      (color: Colors.indigo, label: context.l10n.colorIndigo),
+      (color: Colors.blue, label: context.l10n.colorBlue),
+      (color: Colors.lightBlue, label: context.l10n.colorLightBlue),
+      (color: Colors.cyan, label: context.l10n.colorCyan),
+      (color: Colors.teal, label: context.l10n.colorTeal),
+      (color: Colors.green, label: context.l10n.colorGreen),
+      (color: Colors.lightGreen, label: context.l10n.colorLightGreen),
+      (color: Colors.lime, label: context.l10n.colorLime),
+      (color: Colors.yellow, label: context.l10n.colorYellow),
+      (color: Colors.amber, label: context.l10n.colorAmber),
+      (color: Colors.orange, label: context.l10n.colorOrange),
+      (color: Colors.deepOrange, label: context.l10n.colorDeepOrange),
+      (color: Colors.brown, label: context.l10n.colorBrown),
+      (color: Colors.grey, label: context.l10n.colorGrey),
+      (color: Colors.blueGrey, label: context.l10n.colorBlueGrey),
+      (color: Colors.black, label: context.l10n.colorBlack),
+    ];
+
+    final labelSegments = <ButtonSegment<_LabelType>>[
+      const ButtonSegment(
+        value: _LabelType.text,
+        label: Text('Text'),
+        icon: Icon(Icons.text_fields),
+      ),
+      const ButtonSegment(
+        value: _LabelType.image,
+        label: Text('Image'),
+        icon: Icon(Icons.image_outlined),
+      ),
+      const ButtonSegment(
+        value: _LabelType.icon,
+        label: Text('Icon'),
+        icon: Icon(Icons.emoji_symbols_outlined),
+      ),
+    ];
+
+    final signalSegments = <ButtonSegment<_SignalType>>[
+      const ButtonSegment(
+        value: _SignalType.hex,
+        label: Text('Hex (NEC)'),
+        icon: Icon(Icons.numbers),
+      ),
+      const ButtonSegment(
+        value: _SignalType.raw,
+        label: Text('Raw timings'),
+        icon: Icon(Icons.graphic_eq),
+      ),
+      const ButtonSegment(
+        value: _SignalType.protocol,
+        label: Text('Protocol'),
+        icon: Icon(Icons.tune),
+      ),
+    ];
+
+    IrPreview? preview;
+    String? previewError;
+
+    try {
+      if ((_signalType == _SignalType.hex &&
+              _hexLooksValid &&
+              _customNecLooksValid) ||
+          (_signalType == _SignalType.raw && _rawLooksValid) ||
+          (_signalType == _SignalType.protocol && _protocolLooksValid)) {
+        preview = previewIRButton(_draftButtonForPreview());
+      }
+    } catch (e) {
+      previewError = e.toString();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_screenTitle),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _goToPreviousStep,
+                icon: Icon(_currentStep == 0 ? Icons.close : Icons.arrow_back),
+                label: Text(
+                  _currentStep == 0
+                      ? context.l10n.cancel
+                      : context.l10n.backAction,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: _currentStep == _kTotalSteps - 1
+                    ? (_canSave ? _onSavePressed : null)
+                    : _goToNextStep,
+                icon: Icon(
+                  _currentStep == _kTotalSteps - 1
+                      ? Icons.save
+                      : Icons.arrow_forward,
+                ),
+                label: Text(
+                  _currentStep == _kTotalSteps - 1
+                      ? context.l10n.saveAction
+                      : context.l10n.continueAction,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          children: [
+            _buildStepProgress(theme),
+            if (_currentStep == 0) ...[
+              _sectionHeader(
+                context.l10n.buttonLabelStepTitle,
+                subtitle: context.l10n.buttonLabelStepSubtitle,
+                icon: Icons.label_outline,
+              ),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: SegmentedButton<_LabelType>(
+                          segments: labelSegments,
+                          selected: {_labelType},
+                          onSelectionChanged: (s) {
+                            final next = s.first;
+                            setState(() {
+                              _labelType = next;
+                              if (_labelType == _LabelType.text) {
+                                _clearImage();
+                                _clearIcon();
+                              } else if (_labelType == _LabelType.icon) {
+                                _clearImage();
+                              } else if (_labelType == _LabelType.image) {
+                                _clearIcon();
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_labelType == _LabelType.image) ...[
+                        Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.6),
+                            border: Border.all(
+                                color: theme.colorScheme.outlineVariant
+                                    .withValues(alpha: 0.8)),
+                          ),
+                          child: Center(
+                            child: _imagePreview ??
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 40,
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      context.l10n.noImageSelected,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.75),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: _pickImageFromGallery,
+                                icon: const Icon(Icons.photo_library_outlined),
+                                label: Text(context.l10n.gallery),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton.tonalIcon(
+                                onPressed: _pickImageFromAssets,
+                                icon: const Icon(Icons.grid_view_outlined),
+                                label: Text(context.l10n.builtIn),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_imagePath != null) ...[
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: _clearImage,
+                              icon: const Icon(Icons.delete_outline),
+                              label: Text(context.l10n.removeImage),
+                            ),
+                          ),
+                        ],
+                        if (!_hasLabel) ...[
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              context.l10n.requiredSelectImageOrSwitch,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ] else if (_labelType == _LabelType.icon) ...[
+                        Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.6),
+                            border: Border.all(
+                                color: theme.colorScheme.outlineVariant
+                                    .withValues(alpha: 0.8)),
+                          ),
+                          child: Center(
+                            child: _selectedIcon != null
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        IconData(
+                                          _selectedIcon!.codePoint,
+                                          fontFamily: _selectedIcon!.fontFamily,
+                                          fontPackage:
+                                              _selectedIcon!.fontPackage,
+                                        ),
+                                        size: 64,
+                                        color: _selectedIconColor ??
+                                            theme.colorScheme.primary,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        context.l10n.iconSelected,
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: _selectedIconColor ??
+                                              theme.colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.emoji_symbols_outlined,
+                                        size: 40,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        context.l10n.noIconSelected,
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.75),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _pickIcon,
+                          icon: const Icon(Icons.apps),
+                          label: Text(context.l10n.chooseIcon),
+                        ),
+                        if (_selectedIcon != null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.iconColorTitle,
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest
+                                  .withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 54,
+                                  height: 54,
+                                  decoration: BoxDecoration(
+                                    color: _selectedColor ??
+                                        theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    _selectedIcon,
+                                    size: 28,
+                                    color: _selectedIconColor ??
+                                        theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    context.l10n.iconColorHelper,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: [
+                              _iconColorOption(
+                                null,
+                                context.l10n.defaultColorName,
+                                theme,
+                              ),
+                              for (final choice in colorChoices)
+                                _iconColorOption(
+                                    choice.color, choice.label, theme),
+                              _iconColorOption(
+                                Colors.white,
+                                context.l10n.colorWhite,
+                                theme,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: _clearIcon,
+                              icon: const Icon(Icons.delete_outline),
+                              label: Text(context.l10n.removeIcon),
+                            ),
+                          ),
+                        ],
+                        if (!_hasLabel) ...[
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              context.l10n.requiredSelectIconOrSwitch,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ] else ...[
+                        TextField(
+                          controller: nameController,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.buttonText,
+                            hintText: context.l10n.buttonTextHint,
+                            helperText: context.l10n.buttonTextHelper,
+                            helperMaxLines: _kHelperMaxLines,
+                            hintMaxLines: _kHintMaxLines,
+                            suffixIcon: nameController.text.trim().isEmpty
+                                ? null
+                                : IconButton(
+                                    tooltip: context.l10n.clearAction,
+                                    onPressed: () => nameController.clear(),
+                                    icon: const Icon(Icons.clear),
+                                  ),
+                          ),
+                        ),
+                        if (!_hasLabel) ...[
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              context.l10n.requiredEnterButtonLabel,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ] else if (_currentStep == 1) ...[
+              _sectionHeader(
+                context.l10n.buttonColorStepTitle,
+                subtitle: context.l10n.buttonColorStepSubtitle,
+                icon: Icons.palette_outlined,
+              ),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.selectColor,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          _colorOption(
+                              null, context.l10n.defaultColorName, theme),
+                          for (final choice in colorChoices)
+                            _colorOption(choice.color, choice.label, theme),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ] else ...[
+              _sectionHeader(
+                'IR signal',
+                subtitle: 'Manual entry or database import.',
+                icon: Icons.settings_remote_outlined,
+              ),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: SegmentedButton<bool>(
+                          segments: const [
+                            ButtonSegment(
+                                value: false,
+                                label: Text('Manual'),
+                                icon: Icon(Icons.tune)),
+                            ButtonSegment(
+                                value: true,
+                                label: Text('Database'),
+                                icon: Icon(Icons.storage_rounded)),
+                          ],
+                          selected: {_tabDatabase},
+                          onSelectionChanged: (s) {
+                            final next = s.first;
+                            setState(() => _tabDatabase = next);
+                            if (next) {
+                              _dbEnsureReady();
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_tabDatabase) ...[
+                        _buildDbTab(),
+                      ] else ...[
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SegmentedButton<_SignalType>(
+                            segments: signalSegments,
+                            selected: {_signalType},
+                            onSelectionChanged: (s) {
+                              final next = s.first;
+                              setState(() {
+                                _signalType = next;
+                                if (next == _SignalType.protocol) {
+                                  if (_protoControllers.isEmpty) {
+                                    _syncProtocolControllersFromDefinition(
+                                      widget.button?.protocolParams ??
+                                          const <String, dynamic>{},
+                                    );
+                                  }
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _buildSignalSummaryChips(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Divider(height: 0),
+                        const SizedBox(height: 12),
+                        if (_signalType == _SignalType.hex) ...[
+                          _buildHexSection(),
+                          const SizedBox(height: 10),
+                          _buildNecAdvancedSection(),
+                        ] else if (_signalType == _SignalType.raw) ...[
+                          _buildRawSection(),
+                        ] else ...[
+                          _buildProtocolSection(),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _sectionHeader(
+                'Preview & test',
+                subtitle:
+                    'Review the generated timings and transmit once before saving.',
+                icon: Icons.visibility_outlined,
+              ),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (previewError != null) ...[
+                        Text(
+                          previewError,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                      if (preview != null) ...[
+                        Text(
+                          'Mode: ${preview.mode}',
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Frequency: ${preview.frequencyHz} Hz',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _PatternPreview(
+                          pattern: preview.pattern,
+                          frequencyHz: preview.frequencyHz,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: previewError == null
+                                    ? () async {
+                                        try {
+                                          final previewButton =
+                                              _draftButtonForPreview();
+                                          await sendIR(previewButton);
+                                          showLastActionForButton(
+                                            button: previewButton,
+                                            title: 'Test transmit',
+                                          );
+                                          if (!mounted) return;
+                                          _showSnack('Test transmit sent.');
+                                        } catch (e) {
+                                          if (!mounted) return;
+                                          _showSnack(
+                                              'Test transmit failed: $e');
+                                        }
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.wifi_tethering),
+                                label: const Text('Test transmit'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => setState(() {}),
+                                icon: const Icon(Icons.refresh),
+                                label: Text(context.l10n.refresh),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_signalType == _SignalType.protocol &&
+                            !IrProtocolRegistry.isImplemented(
+                                _selectedProtocolId)) ...[
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.info_outline,
+                                  color: theme.colorScheme.primary),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'This protocol is registered but encoding is not implemented yet.',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ] else ...[
+                        Text(
+                          'Enter valid inputs to generate a preview.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Card(
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: 0.35),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: theme.colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Tip: Use Database mode for fast import, then switch to Manual to fine-tune protocols/timings as needed.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PatternPreview extends StatelessWidget {
+  final List<int> pattern;
+  final int frequencyHz;
+
+  const _PatternPreview({
+    required this.pattern,
+    required this.frequencyHz,
+  });
+
+  String get _patternText => pattern.join(', ');
+
+  Future<void> _copyPattern(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(text: _patternText));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.codeCopied),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  Future<void> _sharePattern() async {
+    await _platformChannel.invokeMethod<void>(
+      'shareText',
+      <String, dynamic>{
+        'subject': 'IR pattern',
+        'text': 'Frequency: $frequencyHz Hz\n\n$_patternText',
+      },
+    );
+  }
+
+  Future<void> _openDetails(BuildContext context) async {
+    final theme = Theme.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Pattern preview',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _copyPattern(sheetContext),
+                    icon: const Icon(Icons.copy_rounded),
+                    tooltip: sheetContext.l10n.copyCode,
+                  ),
+                  IconButton(
+                    onPressed: _sharePattern,
+                    icon: const Icon(Icons.ios_share_rounded),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: sheetContext.l10n.close,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Frequency: $frequencyHz Hz',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              IrWaveformPanel(
+                pattern: pattern,
+                frequencyHz: frequencyHz,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant
+                          .withValues(alpha: 0.7),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      _patternText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'monospace',
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final int count = pattern.length;
+    final int sum = pattern.fold(0, (p, v) => p + v);
+
+    final int headN = count > 16 ? 16 : count;
+    final String head = pattern.take(headN).join(', ');
+    final String text = count <= headN ? head : '$head, …';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Pattern preview ($count durations, total $sumµs)',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => _openDetails(context),
+                icon: const Icon(Icons.open_in_full_rounded, size: 18),
+                visualDensity: VisualDensity.compact,
+                splashRadius: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontFamily: 'monospace',
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

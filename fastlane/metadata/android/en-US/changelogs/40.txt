@@ -1,0 +1,2 @@
+Add support for Ocrustar USB-C IR dongles with VID 0x045C and PID 0x0134
+Fix mixed Russian and Ukrainian translations across the Ukrainian interface
