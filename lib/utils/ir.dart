@@ -1,7 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:irblaster_controller/ir/ir_protocol_registry.dart';
+<<<<<<< HEAD
 import 'package:irblaster_controller/utils/ir_transmitter_platform.dart';
+=======
+import 'package:irblaster_controller/state/network_bridge_prefs.dart';
+import 'package:irblaster_controller/utils/ir_transmitter_platform.dart';
+import 'package:irblaster_controller/utils/network_ir_transmitter.dart';
+>>>>>>> main
 import 'remote.dart';
 
 const platform = MethodChannel('org.nslabs/irtransmitter');
@@ -243,10 +249,45 @@ List<int> _parseRawPattern(String rawData, {required String where}) {
   return pattern;
 }
 
+<<<<<<< HEAD
+=======
+/// Routes a fully-computed IR command through whichever transport is
+/// currently selected: the ESP32 network bridge (when enabled in
+/// Settings > Ponte de Rede) or the native Android platform channel.
+///
+/// This is the single interception point for both [transmit] and
+/// [transmitRaw] below, so neither the native Kotlin transmitter code nor
+/// any call site elsewhere in the app needs to know about the bridge.
+Future<void> _dispatchIr(int frequencyHz, List<int> pattern) async {
+  final bridge = NetworkBridgePrefs.instance;
+  if (bridge.isWifi) {
+    await NetworkIrTransmitter.send(frequencyHz, pattern);
+    return;
+  }
+  if (bridge.isBluetooth) {
+    throw UnimplementedError(
+      'Transporte Bluetooth ainda não implementado nesta versão. '
+      'Selecione Wi-Fi ou Desativado em Configurações > Ponte de Rede.',
+    );
+  }
+  await platform.invokeMethod("transmitRaw", {
+    "frequency": frequencyHz,
+    "list": pattern,
+  });
+}
+
+>>>>>>> main
 Future<void> transmit(int code) async {
   final pattern = convertNECtoList(code);
   _validatePattern(pattern, where: 'hexPattern');
   try {
+<<<<<<< HEAD
+=======
+    if (NetworkBridgePrefs.instance.isEnabled) {
+      await _dispatchIr(kDefaultNecFrequencyHz, pattern);
+      return;
+    }
+>>>>>>> main
     await platform.invokeMethod("transmit", {"list": pattern});
   } catch (e, st) {
     _reportFlutterError('transmit()', e, st);
@@ -258,8 +299,12 @@ Future<void> transmitRaw(int frequency, List<int> pattern) async {
   _validateFrequency(frequency);
   _validatePattern(pattern, where: 'rawPattern');
   try {
+<<<<<<< HEAD
     await platform
         .invokeMethod("transmitRaw", {"frequency": frequency, "list": pattern});
+=======
+    await _dispatchIr(frequency, pattern);
+>>>>>>> main
   } catch (e, st) {
     _reportFlutterError('transmitRaw()', e, st);
     rethrow;

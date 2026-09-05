@@ -1,0 +1,73 @@
+name: Build APK
+
+# Motivo dos erros de compilação que você vinha tendo (diagnóstico):
+#
+# 1) Este projeto NÃO usa "qualquer" Flutter — ele traz o próprio Flutter
+#    fixado como git submodule na pasta `.flutter` (veja `.gitmodules`).
+#    Se o workflow do GitHub Actions faz um checkout normal (sem
+#    "submodules: recursive") e depois instala uma versão qualquer do
+#    Flutter (ex: action `subosito/flutter-action` com "stable"), você
+#    acaba compilando com um Flutter/Dart DIFERENTE do que o projeto foi
+#    escrito para usar — e é exatamente esse descompasso de versão que
+#    costuma gerar os erros de dependência que você via.
+#
+# 2) O Android Gradle Plugin usado é o 8.13.1 (veja android/settings.gradle)
+#    com compileSdk 36. Isso precisa de um JDK moderno (17 ou 21) para
+#    RODAR o Gradle, mesmo o app compilando o bytecode para Java 11
+#    (compileOptions). JDK 11 no runner do Actions pode falhar aqui.
+#
+# Este workflow resolve os dois pontos: baixa o Flutter certo (o
+# submodule) e usa JDK 21.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (com o submodule do Flutter)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache do Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle*') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Colocar o Flutter do submodule no PATH
+        run: echo "${{ github.workspace }}/.flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Verificar versão do Flutter usada
+        run: flutter --version
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze (não falha o build, só avisa)
+        run: flutter analyze || true
+
+      - name: Build APK (release)
+        run: flutter build apk --release
+
+      - name: Publicar o APK como artefato do workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

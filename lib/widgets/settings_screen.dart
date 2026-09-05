@@ -20,6 +20,10 @@ import 'package:irblaster_controller/utils/remote.dart';
 import 'package:irblaster_controller/utils/remotes_io.dart';
 import 'package:irblaster_controller/widgets/about_screen.dart';
 import 'package:irblaster_controller/widgets/settings/widgets/donation_sheet.dart';
+<<<<<<< HEAD
+=======
+import 'package:irblaster_controller/widgets/settings/widgets/network_bridge_card.dart';
+>>>>>>> main
 import 'package:irblaster_controller/widgets/settings/widgets/section_card.dart';
 import 'package:irblaster_controller/widgets/settings/widgets/support_pill.dart';
 import 'package:irblaster_controller/widgets/universal_power_screen.dart';
@@ -489,6 +493,11 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 10),
           _buildIrTransmitterSection(context, cs),
           const SizedBox(height: 10),
+<<<<<<< HEAD
+=======
+          _buildNetworkBridgeSection(context, cs),
+          const SizedBox(height: 10),
+>>>>>>> main
           _buildLearningSection(context, cs),
           const SizedBox(height: 10),
           _buildGitHubStoreSection(context, cs),
@@ -773,6 +782,21 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+<<<<<<< HEAD
+=======
+  Widget _buildNetworkBridgeSection(BuildContext context, ColorScheme cs) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SectionCard(
+        title: 'Ponte de Rede (ESP32)',
+        subtitle: 'Envie os comandos IR pela rede para um ESP32 em vez do celular',
+        leading: Icon(Icons.router_rounded, color: cs.primary),
+        child: const NetworkBridgeCard(),
+      ),
+    );
+  }
+
+>>>>>>> main
   Widget _buildLearningSection(BuildContext context, ColorScheme cs) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
