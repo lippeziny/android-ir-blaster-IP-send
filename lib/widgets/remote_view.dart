@@ -14,10 +14,7 @@ import 'package:irblaster_controller/state/device_controls_prefs.dart';
 import 'package:irblaster_controller/state/home_button_widget_prefs.dart';
 import 'package:irblaster_controller/state/quick_settings_prefs.dart';
 import 'package:irblaster_controller/state/remote_display_prefs.dart';
-<<<<<<< HEAD
-=======
 import 'package:irblaster_controller/state/network_bridge_prefs.dart';
->>>>>>> main
 import 'package:irblaster_controller/state/remotes_state.dart';
 import 'package:irblaster_controller/utils/button_color_accessibility.dart';
 import 'package:irblaster_controller/utils/ir.dart';
@@ -121,10 +118,7 @@ class RemoteViewState extends State<RemoteView> {
   }
 
   Future<bool> _hasUsableOrSelectedEmitter() async {
-<<<<<<< HEAD
-=======
     if (NetworkBridgePrefs.instance.isEnabled) return true;
->>>>>>> main
     try {
       final caps = await IrTransmitterPlatform.getCapabilities();
       final audioSelected = caps.currentType == IrTransmitterType.audio1Led ||
