@@ -9,10 +9,7 @@ import 'package:irblaster_controller/state/app_shortcuts.dart';
 import 'package:irblaster_controller/state/app_theme.dart';
 import 'package:irblaster_controller/state/dynamic_color.dart';
 import 'package:irblaster_controller/state/haptics.dart';
-<<<<<<< HEAD
-=======
 import 'package:irblaster_controller/state/network_bridge_prefs.dart';
->>>>>>> main
 import 'package:irblaster_controller/state/orientation_pref.dart';
 import 'package:irblaster_controller/state/remote_display_prefs.dart';
 import 'package:irblaster_controller/state/startup_prefs.dart';
@@ -54,10 +51,7 @@ Future<void> main() async {
       RemoteDisplayController.instance.load(),
       StartupPrefsController.instance.load(),
       TransmitterPrefs.instance.load(),
-<<<<<<< HEAD
-=======
       NetworkBridgePrefs.instance.load(),
->>>>>>> main
       // lazy import to avoid circulars; we refer by string to keep tool happy
     ]);
   } catch (e, st) {
