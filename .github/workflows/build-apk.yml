@@ -88,8 +88,7 @@ jobs:
         run: flutter analyze || true
 
       - name: Build APK (release)
-        run: flutter build apk --release
-
+        run: flutter build apk --release --no-tree-shake-icons
       - name: Publicar o APK como artefato do workflow
         uses: actions/upload-artifact@v4
         with:
