@@ -1,0 +1,18 @@
+--- repo_orig/android-ir-blaster-master/lib/widgets/remote_view.dart	2026-08-31 23:22:51.000000000 +0000
++++ repo/android-ir-blaster-master/lib/widgets/remote_view.dart	2026-09-05 21:24:51.966392951 +0000
+@@ -14,6 +14,7 @@
+ import 'package:irblaster_controller/state/home_button_widget_prefs.dart';
+ import 'package:irblaster_controller/state/quick_settings_prefs.dart';
+ import 'package:irblaster_controller/state/remote_display_prefs.dart';
++import 'package:irblaster_controller/state/network_bridge_prefs.dart';
+ import 'package:irblaster_controller/state/remotes_state.dart';
+ import 'package:irblaster_controller/utils/button_color_accessibility.dart';
+ import 'package:irblaster_controller/utils/ir.dart';
+@@ -117,6 +118,7 @@
+   }
+ 
+   Future<bool> _hasUsableOrSelectedEmitter() async {
++    if (NetworkBridgePrefs.instance.isEnabled) return true;
+     try {
+       final caps = await IrTransmitterPlatform.getCapabilities();
+       final audioSelected = caps.currentType == IrTransmitterType.audio1Led ||

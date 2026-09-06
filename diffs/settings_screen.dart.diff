@@ -1,0 +1,38 @@
+--- repo_orig/android-ir-blaster-master/lib/widgets/settings_screen.dart	2026-08-31 23:22:51.000000000 +0000
++++ repo/android-ir-blaster-master/lib/widgets/settings_screen.dart	2026-09-05 21:25:07.027151424 +0000
+@@ -20,6 +20,7 @@
+ import 'package:irblaster_controller/utils/remotes_io.dart';
+ import 'package:irblaster_controller/widgets/about_screen.dart';
+ import 'package:irblaster_controller/widgets/settings/widgets/donation_sheet.dart';
++import 'package:irblaster_controller/widgets/settings/widgets/network_bridge_card.dart';
+ import 'package:irblaster_controller/widgets/settings/widgets/section_card.dart';
+ import 'package:irblaster_controller/widgets/settings/widgets/support_pill.dart';
+ import 'package:irblaster_controller/widgets/universal_power_screen.dart';
+@@ -489,6 +490,8 @@
+           const SizedBox(height: 10),
+           _buildIrTransmitterSection(context, cs),
+           const SizedBox(height: 10),
++          _buildNetworkBridgeSection(context, cs),
++          const SizedBox(height: 10),
+           _buildLearningSection(context, cs),
+           const SizedBox(height: 10),
+           _buildGitHubStoreSection(context, cs),
+@@ -772,6 +775,18 @@
+       ),
+     );
+   }
++
++  Widget _buildNetworkBridgeSection(BuildContext context, ColorScheme cs) {
++    return Padding(
++      padding: const EdgeInsets.symmetric(horizontal: 16),
++      child: SectionCard(
++        title: 'Ponte de Rede (ESP32)',
++        subtitle: 'Envie os comandos IR pela rede para um ESP32 em vez do celular',
++        leading: Icon(Icons.router_rounded, color: cs.primary),
++        child: const NetworkBridgeCard(),
++      ),
++    );
++  }
+ 
+   Widget _buildLearningSection(BuildContext context, ColorScheme cs) {
+     return Padding(

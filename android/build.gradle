@@ -1,0 +1,59 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            // home_widget 0.8.1 uses "1.+", which can select Glance alpha
+            // releases requiring a newer compile SDK and Android Gradle Plugin.
+            if (details.requested.group == "androidx.glance") {
+                details.useVersion "1.1.1"
+                details.because "Keep Glance on the SDK 36 / AGP 8.13 compatible stable release"
+            }
+        }
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+subprojects { subproject ->
+    def forceCompileSdk = {
+        if (subproject.hasProperty("android")) {
+            subproject.android {
+                compileSdkVersion 36
+
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_11
+                    targetCompatibility JavaVersion.VERSION_11
+                }
+            }
+        }
+    }
+    subproject.plugins.withId("com.android.application") { forceCompileSdk() }
+    subproject.plugins.withId("com.android.library") { forceCompileSdk() }
+    subproject.plugins.withId("org.jetbrains.kotlin.android") {
+        subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = "11"
+            }
+        }
+    }
+    if (subproject.state.executed) {
+        forceCompileSdk()
+    } else {
+        subproject.afterEvaluate {
+            forceCompileSdk()
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

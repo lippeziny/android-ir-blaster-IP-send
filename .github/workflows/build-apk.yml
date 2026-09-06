@@ -1,0 +1,96 @@
+name: Build APK
+
+# Motivo dos erros de compilação que você vinha tendo (diagnóstico):
+#
+# 1) Este projeto NÃO usa "qualquer" Flutter — ele traz o próprio Flutter
+#    fixado como git submodule na pasta `.flutter` (veja `.gitmodules`).
+#    Se o workflow do GitHub Actions faz um checkout normal (sem
+#    "submodules: recursive") e depois instala uma versão qualquer do
+#    Flutter (ex: action `subosito/flutter-action` com "stable"), você
+#    acaba compilando com um Flutter/Dart DIFERENTE do que o projeto foi
+#    escrito para usar — e é exatamente esse descompasso de versão que
+#    costuma gerar os erros de dependência que você via.
+#
+# 2) CONFIRMADO NO LOG (05/09): mesmo trazendo o submodule certo, o
+#    "actions/checkout" faz um clone RASO (--depth=1) por padrão — e isso
+#    vale pro submodule também. O Flutter descobre a própria versão
+#    rodando `git describe` dentro da pasta `.flutter`; sem histórico/tags
+#    (por causa do clone raso), ele não acha nenhuma tag e assume
+#    "0.0.0-unknown". Com isso, o `pub get` acha que o SDK é a versão
+#    0.0.0 e rejeita pacotes como o `url_launcher` que exigem Flutter
+#    >=3.27.0 — foi exatamente esse o erro do seu último log. A correção
+#    é usar "fetch-depth: 0" no checkout (histórico completo, com tags).
+#
+# 3) O projeto usa Android Gradle Plugin 8.13.1 (veja android/settings.gradle)
+#    com compileSdk 36. Isso precisa de um JDK moderno (17 ou 21) para
+#    RODAR o Gradle, mesmo o app compilando o bytecode para Java 11
+#    (compileOptions). JDK 11 no runner do Actions pode falhar aqui.
+#
+# 4) CONFIRMADO NO LOG (05/09, build seguinte): "No file or variants found
+#    for asset: assets/db/irblaster.sqlite". Esse arquivo .sqlite é
+#    intencionalmente ignorado no .gitignore — ele é GERADO a partir de
+#    assets/db_src/irblaster.sql pelo script tools/build_ir_db.py.
+#    Esse passo nunca rodava no CI, então o asset declarado no
+#    pubspec.yaml nunca existia. Este workflow roda esse script antes do
+#    build (só usa a biblioteca padrão do Python, sem instalar nada).
+#
+# Este workflow resolve os quatro pontos. O checkout fica um pouco mais
+# lento (baixa o histórico do Flutter inteiro), mas é o preço de usar
+# exatamente o Flutter que o projeto pede.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (com o submodule do Flutter, histórico completo)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache do Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle*') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Colocar o Flutter do submodule no PATH
+        run: echo "${{ github.workspace }}/.flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Gerar assets/db/irblaster.sqlite (a partir do .sql versionado)
+        run: python3 tools/build_ir_db.py
+
+      - name: Verificar versão do Flutter usada
+        run: flutter --version
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze (não falha o build, só avisa)
+        run: flutter analyze || true
+
+      - name: Build APK (release)
+        run: flutter build apk --release --no-tree-shake-icons
+      - name: Publicar o APK como artefato do workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

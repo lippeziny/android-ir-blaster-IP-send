@@ -1,0 +1,154 @@
+import '../ir_protocol_types.dart';
+
+const IrProtocolDefinition rc6ProtocolDefinition = IrProtocolDefinition(
+  id: 'rc6',
+  displayName: 'RC6',
+  description:
+      'RC6 mode-0: leader 2664/888, start+mode bits, double-width toggle bit, '
+      'then 16-bit payload (address+command), followed by a 6t silent gap. Carrier 36kHz.',
+  implemented: true,
+  defaultFrequencyHz: 36000,
+  fields: <IrFieldDef>[
+    IrFieldDef(
+      id: 'hex',
+      label: 'Code (hex)',
+      type: IrFieldType.string,
+      required: true,
+      maxLength: 4,
+      hint: 'e.g., 800F',
+      helperText: 'Up to 4 hex digits (0-9, A-F).',
+      maxLines: 1,
+    ),
+  ],
+);
+
+class Rc6ProtocolEncoder implements IrProtocolEncoder {
+  static const String protocolId = 'rc6';
+  const Rc6ProtocolEncoder();
+
+  @override
+  String get id => protocolId;
+
+  @override
+  IrProtocolDefinition get definition => rc6ProtocolDefinition;
+
+  static const int defaultFrequencyHz = 36000;
+  // RC6 toggle changes on a new press, but stays constant while the same key
+  // is repeating.
+  static bool _toggleFlag = false;
+  static int? _lastPayload;
+
+  @override
+  IrEncodeResult encode(Map<String, dynamic> params) {
+    final dynamic h = params['hex'];
+    if (h is! String) {
+      throw ArgumentError('hex must be a string');
+    }
+    final String hex = h.trim();
+    if (hex.isEmpty) {
+      throw ArgumentError('RC6 hexcode length == 0');
+    }
+    for (int i = 0; i < hex.length; i++) {
+      if (!_isHexChar(hex.codeUnitAt(i))) {
+        throw ArgumentError('RC6 hexcode is not hexadecimal');
+      }
+    }
+
+    // Timings
+    const int t = 0x01BC; // 444
+    const int leaderMark = 0x0A68; // 2664
+    const int leaderSpace = 0x0378; // 888
+    const int signalFree = 0x0A68; // 6t = 2664
+
+    // Payload: last 4 hex chars -> 16-bit binary
+    final String last4 = (hex.length >= 4) ? hex.substring(hex.length - 4) : hex;
+    final int value = int.parse(last4, radix: 16) & 0xFFFF;
+    final String payloadBits = value.toRadixString(2).padLeft(16, '0');
+    final bool toggle = _resolveToggle(params, value);
+
+    // RC6 mode-0 bit layout:
+    // start(1), mode(000), toggle(double-width), payload(16 bits)
+    final String bits = '1000${toggle ? '1' : '0'}$payloadBits';
+
+    // Build mark/space durations by merging adjacent half-bits with same level.
+    // For each bit: 1 => mark then space, 0 => space then mark.
+    final List<int> pattern = <int>[];
+    bool lastWasMark = false;
+
+    void addSegment(bool isMark, int durationUs) {
+      if (durationUs <= 0) return;
+      if (pattern.isNotEmpty && lastWasMark == isMark) {
+        pattern[pattern.length - 1] = pattern.last + durationUs;
+      } else {
+        pattern.add(durationUs);
+      }
+      lastWasMark = isMark;
+    }
+
+    addSegment(true, leaderMark);
+    addSegment(false, leaderSpace);
+
+    for (int i = 0; i < bits.length; i++) {
+      final int half = (i == 4) ? (2 * t) : t; // toggle bit is double-width
+      final bool one = bits.codeUnitAt(i) == 0x31; // '1'
+      addSegment(one, half);
+      addSegment(!one, half);
+    }
+
+    // Mandatory signal-free time at end of frame.
+    addSegment(false, signalFree);
+
+    return IrEncodeResult(
+      frequencyHz: defaultFrequencyHz,
+      pattern: pattern,
+    );
+  }
+
+  bool _resolveToggle(Map<String, dynamic> params, int payload) {
+    final dynamic rawToggle = params['toggle'];
+    if (rawToggle is bool) {
+      if (params['_preview'] != true) {
+        _rememberToggleState(rawToggle, payload);
+      }
+      return rawToggle;
+    }
+    if (rawToggle is String) {
+      final String s = rawToggle.trim().toLowerCase();
+      if (s == '0' || s == 'false') {
+        if (params['_preview'] != true) {
+          _rememberToggleState(false, payload);
+        }
+        return false;
+      }
+      if (s == '1' || s == 'true') {
+        if (params['_preview'] != true) {
+          _rememberToggleState(true, payload);
+        }
+        return true;
+      }
+      throw ArgumentError('RC6 toggle must be 0/1 or true/false');
+    }
+
+    final bool isRepeat = params['_repeat'] == true &&
+        Rc6ProtocolEncoder._lastPayload == payload;
+    final bool resolved = isRepeat
+        ? Rc6ProtocolEncoder._toggleFlag
+        : !Rc6ProtocolEncoder._toggleFlag;
+    if (params['_preview'] == true) {
+      return resolved;
+    }
+    _rememberToggleState(resolved, payload);
+    return resolved;
+  }
+
+  void _rememberToggleState(bool toggle, int payload) {
+    Rc6ProtocolEncoder._toggleFlag = toggle;
+    Rc6ProtocolEncoder._lastPayload = payload;
+  }
+}
+
+bool _isHexChar(int codeUnit) {
+  return (codeUnit >= 48 && codeUnit <= 57) ||
+      (codeUnit >= 65 && codeUnit <= 70) ||
+      (codeUnit >= 97 && codeUnit <= 102);
+}

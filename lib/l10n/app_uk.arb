@@ -1,0 +1,2321 @@
+{
+  "@@locale": "uk",
+  "appTitle": "IR Blaster",
+  "loading": "Завантаження…",
+  "unknownError": "Невідома помилка",
+  "failedToStart": "Не вдалося запустити",
+  "retry": "Повторити",
+  "quickTilePower": "Живлення",
+  "quickTileMute": "Вимкнути звук",
+  "quickTileVolumeUp": "Гучн. +",
+  "quickTileVolumeDown": "Гучн. -",
+  "homeUsbPermissionRequiredMessage": "Цей телефон не має вбудованого ІЧ-випромінювача. USB ІЧ-адаптер виявлено, але дозвіл ще не надано.\n\nПідтвердьте системний запит дозволу USB, щоб увімкнути надсилання ІЧ-команд.",
+  "homeUsbPermissionDeniedMessage": "Цей телефон не має вбудованого ІЧ-випромінювача. USB ІЧ-адаптер виявлено, але в дозволі USB відмовлено.\n\nЗнову запитайте дозвіл і підтвердьте запит, щоб увімкнути надсилання ІЧ-команд.",
+  "homeUsbPermissionGrantedMessage": "Цей телефон не має вбудованого ІЧ-випромінювача. USB ІЧ-адаптер авторизовано, але він ще не ініціалізований.",
+  "homeUsbOpenFailedMessage": "Цей телефон не має вбудованого ІЧ-випромінювача. USB ІЧ-адаптер виявлено та авторизовано, але його не вдалося ініціалізувати.\n\nПовторно підключіть ключ і спробуйте ще раз.",
+  "homeUsbReadyMessage": "Цей телефон не має вбудованого ІЧ-випромінювача.",
+  "homeUsbNoDeviceMessage": "Цей телефон не містить вбудованого ІЧ-випромінювача, і наразі не підключено жодного підтримуваного USB ІЧ-адаптера.\n\nВи все ще можете створювати, імпортувати та керувати пультами, але для надсилання ІЧ-команд вам потрібен один із наведених нижче варіантів.",
+  "homeUsbOptionPlugIn": "Підключіть підтримуваний USB ІЧ-адаптер, а потім підтвердьте дозвіл.",
+  "homeUsbOptionReady": "Готово до використання.",
+  "homeUsbOptionPermissionRequired": "Підключено. Потрібен дозвіл.",
+  "homeUsbOptionPermissionDenied": "У дозволі відмовлено. Запитайте знову.",
+  "homeUsbOptionPermissionGranted": "Дозволено. Ініціалізація адаптера.",
+  "homeUsbOptionOpenFailed": "Авторизовано, але не вдалося ініціалізувати.",
+  "homeHardwareBannerNoInternal": "Цей телефон не має вбудованого ІЧ-порту. Підключіть USB ІЧ-адаптер або ввімкніть режим аудіо в налаштуваннях.",
+  "homeHardwareBannerPermissionRequired": "Виявлено USB-адаптер. Для надсилання ІЧ-команд потрібен дозвіл.",
+  "homeHardwareBannerPermissionDenied": "У дозволі USB відмовлено. Запитуйте його ще раз, щоб надіслати ІЧ.",
+  "homeHardwareBannerPermissionGranted": "USB-адаптер авторизовано. Очікування ініціалізації.",
+  "homeHardwareBannerOpenFailed": "USB-адаптер авторизовано, але не вдалося ініціалізувати.",
+  "homeHardwareBannerReady": "USB готовий.",
+  "homeHardwareRequiredTitle": "Для надсилання команд потрібне ІЧ-обладнання",
+  "homeUsbDongleRecommended": "USB ІЧ-адаптер (рекомендовано)",
+  "homeAudioAdapterAlternative": "Аудіо ІЧ-адаптер (альтернатива)",
+  "homeAudioAdapterDescription": "Налаштування → ІЧ-передавач → Аудіо (1 LED / 2 LED). Потрібен аудіо ІЧ-адаптер.",
+  "close": "Закрити",
+  "homeChooseTransmitter": "Виберіть передавач",
+  "openSettings": "Відкрити налаштування",
+  "homeUsbPermissionSentApprove": "Запит на дозвіл USB надіслано. Підтвердьте системний запит, щоб увімкнути USB.",
+  "homeUsbDongleNotDetected": "Не виявлено підтримуваного USB ІЧ-адаптера. Підключіть його та повторіть спробу.",
+  "homeUsbPermissionRequestFailed": "Не вдалося запитати дозвіл USB.",
+  "working": "Виконується…",
+  "requestUsbPermission": "Запросити дозвіл USB",
+  "homeHardwareTip": "Порада. Зараз ви все ще можете створювати й організовувати пульти. Апаратне забезпечення потрібне лише під час передачі.",
+  "homeNoIrTransmitterTitle": "ІЧ-передавач недоступний",
+  "homeHardwareRequiredBody": "IR Blaster може створювати та керувати пультами на будь-якому телефоні. Щоб фактично надсилати команди через ІЧ-порт, вашому пристрою потрібен один із наведених нижче параметрів обладнання.",
+  "homeCanStillUseWithoutHardware": "Ви все ще можете створювати, імпортувати та впорядковувати пульти прямо зараз.",
+  "homeWaysToUseIrBlaster": "Способи використання IR Blaster",
+  "homeBuiltInIrOptionTitle": "Телефон із вбудованим ІЧ-передавачем",
+  "homeBuiltInIrOptionSubtitle": "Працює на підтримуваних телефонах із вбудованим ІЧ-передавачем. У цьому телефоні його немає.",
+  "homeBuiltInIrUnavailable": "Недоступно на цьому телефоні",
+  "homeUsbFamilyTiqiaaZaza": "Tiqiaa / ZaZa",
+  "homeUsbFamilyElkSmart": "ElkSmart",
+  "homeAudioAccessoryLabel": "Аудіоадаптер 3,5 мм",
+  "homeContinueWithoutHardware": "Продовжити без обладнання",
+  "homeHowItWorks": "Як це працює",
+  "settingsNavLabel": "Налаштування",
+  "dismiss": "Закрити",
+  "remotesNavLabel": "Пульти",
+  "macrosNavLabel": "Макроси",
+  "signalTesterNavLabel": "Тестер сигналу",
+  "settingsTitle": "Налаштування",
+  "remoteNoIrEmitterTitle": "Без ІЧ випромінювача",
+  "remoteNoIrEmitterMessage": "Цей пристрій не має ІЧ-випромінювача",
+  "remoteNoIrEmitterNeedsEmitter": "Для роботи цієї програми потрібен ІЧ-випромінювач",
+  "remoteDismiss": "Закрити",
+  "remoteClose": "Закрити",
+  "remoteFailedToSend": "Не вдалося надіслати ІЧ: {error}",
+  "@remoteFailedToSend": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "remoteFailedToStartLoop": "Не вдалося запустити цикл: {error}",
+  "@remoteFailedToStartLoop": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "remoteLoopStoppedFailed": "Цикл зупинено (не вдалося надіслати): {error}",
+  "@remoteLoopStoppedFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "remoteLoopingHint": "Цикл \"{title}\". Натисніть «Зупинити» на верхній панелі, щоб зупинити.",
+  "@remoteLoopingHint": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "remoteLoopStopped": "Цикл зупинено.",
+  "remoteUpdatedNotFound": "Пульт оновлено на екрані. Його не знайдено в збереженому списку.",
+  "remoteUpdatedNamed": "Оновлено \"{name}\".",
+  "@remoteUpdatedNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "remoteDeleteFailed": "Не вдалося видалити: {error}",
+  "@remoteDeleteFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "remoteNotFoundSavedList": "Пульт не знайдено в збереженому списку.",
+  "remoteDeletedNamed": "Видалено \"{name}\".",
+  "@remoteDeletedNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "buttonFallbackTitle": "Кнопка",
+  "imageFallbackTitle": "Зображення",
+  "noBrowserAvailable": "Браузер недоступний",
+  "failedToOpen": "Не вдалося відкрити: {error}",
+  "@failedToOpen": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "cancel": "Скасувати",
+  "settingsRestoreDemoTitle": "Відновити демонстраційні пульти?",
+  "settingsRestoreDemoMessage": "Це замінить ваші поточні пульти на вбудовані демонстраційні пульти. Рекомендується створити резервну копію, якщо ви хочете зберегти поточний список.",
+  "settingsRestoreDemoConfirm": "Відновити демо",
+  "settingsDemoRemotesRestored": "Демо пульти відновлені.",
+  "settingsDeleteAllRemotesTitle": "Видалити всі пульти?",
+  "settingsDeleteAllRemotesMessage": "Усі пульти буде видалено з цього пристрою. Цю дію не можна скасувати.",
+  "settingsDeleteAllConfirm": "Видалити все",
+  "settingsAllRemotesDeleted": "Усі пульти видалено.",
+  "themeAuto": "Автотема",
+  "themeLight": "Світла тема",
+  "themeDark": "Темна тема",
+  "themeDescAuto": "Дотримується налаштувань вашого пристрою",
+  "themeDescLight": "Завжди яскраво і чітко",
+  "themeDescDark": "Легкий для очей",
+  "themeHintAuto": "Тема автоматично перемикається, коли ви змінюєте налаштування пристрою між світлим і темним режимами",
+  "themeHintLight": "Ідеально підходить для денного використання та добре освітлених місць",
+  "themeHintDark": "Зменшує напругу очей в умовах слабкого освітлення та економить батарею на OLED-екранах",
+  "supportDevelopmentTitle": "Підтримати розробку",
+  "supportDevelopmentSubtitle": "Допоможіть підтримувати IR Blaster і сумісність з обладнанням",
+  "supportDevelopmentBody": "Ні реклами, ні відстеження, ні заблокованих функцій. Ваша підтримка фінансує роботу протоколу, підтримку USB-адаптера та кращу сумісність між пристроями.",
+  "donate": "Підтримати",
+  "starRepo": "Позначити репозиторій зіркою",
+  "repositoryLinkCopied": "Посилання на репозиторій скопійовано",
+  "supportPillLocalOnly": "Лише локально",
+  "supportPillNoTracking": "Немає відстеження",
+  "supportPillHardwareAware": "З урахуванням обладнання",
+  "supportPillOpenSource": "Відкритий код",
+  "appearanceTitle": "Зовнішній вигляд",
+  "appearanceSubtitle": "Налаштуйте свій візуальний досвід",
+  "localizationTitle": "Локалізація",
+  "localizationSubtitle": "Мова програми та поведінка перекладу",
+  "localizationAutoUsing": "Авто: використовується {language}",
+  "@localizationAutoUsing": {
+    "placeholders": {
+      "language": {}
+    }
+  },
+  "localizationAutoDescription": "Застосунок використовує мову пристрою, якщо це можливо.",
+  "localizationManualDescription": "Мову застосунку вибрано вручну.",
+  "useSystemLanguageTitle": "Використовувати системну мову",
+  "useSystemLanguageEnabled": "Мова вашого пристрою: {language}",
+  "@useSystemLanguageEnabled": {
+    "placeholders": {
+      "language": {}
+    }
+  },
+  "useSystemLanguageDisabled": "Використовуйте мову, вибрану нижче, замість стандартної для пристрою.",
+  "chooseAppLanguage": "Виберіть мову програми",
+  "languagePickerDisabledHint": "Вимкніть системну мову, щоб вибрати мову вручну.",
+  "searchLanguages": "Пошук мов",
+  "noLanguagesFound": "Немає відповідних мов",
+  "localizationHint": "Коли системну мову ввімкнено, застосунок використовує локаль пристрою та повертається до англійської, якщо переклад недоступний. Вимкніть цю опцію, щоб вибрати конкретну мову.",
+  "appLanguageTitle": "Мова програми",
+  "appLanguageHint": "Автоматично відповідає мові вашого пристрою. Виберіть тут англійську або французьку, щоб замінити її лише для програми.",
+  "languageAuto": "Авто (система)",
+  "languageAutoDescription": "Автоматично використовувати мову пристрою",
+  "languageEnglish": "English",
+  "languageEnglishDescription": "Завжди використовувати англійську мову",
+  "languageFrench": "Français",
+  "languageFrenchDescription": "Завжди використовувати французьку мову",
+  "languageAutoShort": "Авто",
+  "languageEnglishShort": "English",
+  "languageFrenchShort": "Français",
+  "useDynamicColors": "Використовуйте динамічні кольори",
+  "themeChoiceAuto": "Авто",
+  "themeChoiceLight": "Світла",
+  "themeChoiceDark": "Темна",
+  "irTransmitterTitle": "ІЧ-передавач",
+  "irTransmitterSubtitle": "Виберіть, яке обладнання надсилає ІЧ-команди",
+  "interactionTitle": "Взаємодія",
+  "interactionSubtitle": "Тактильний відгук і компонування пульта",
+  "autoOpenLastRemoteTitle": "Відкривати останній пульт під час запуску",
+  "autoOpenLastRemoteSubtitle": "Під час запуску застосунку відкриває останній використаний пульт. Якщо він недоступний, відображається список пультів.",
+  "hapticFeedbackTitle": "Тактильний зворотний зв'язок",
+  "hapticFeedbackSubtitle": "Вібрувати під час натискань і дій",
+  "intensity": "Інтенсивність",
+  "intensityLight": "Низька",
+  "intensityMedium": "Середня",
+  "intensityStrong": "Висока",
+  "remoteButtonMetadataTitle": "Показувати технічні мітки кнопок",
+  "remoteButtonMetadataSubtitle": "Показує протокол, код і частоту на кнопках пульта.",
+  "remoteButtonMetadataShown": "Технічні мітки кнопок показано.",
+  "remoteButtonMetadataHidden": "Технічні мітки кнопок приховано.",
+  "flipRemoteDefaultTitle": "Перевертати пульт за замовчуванням",
+  "flipRemoteDefaultSubtitle": "Відкривати екран пульта повернутим на 180° для USB-адаптерів, підключених знизу.",
+  "remoteViewFlipped": "Пульт відкриватиметься перевернутим.",
+  "remoteViewNormal": "Пульт відкриватиметься у звичайній орієнтації.",
+  "backupTitle": "Резервне копіювання",
+  "backupSubtitle": "Імпорт/експорт пультів і макросів",
+  "importBackup": "Імпорт резервної копії",
+  "importBackupSubtitle": "Імпортуйте резервні копії пультів/макросів або файли Flipper Zero, LIRC або IRPLUS",
+  "bulkImportFolder": "Папка масового імпорту",
+  "bulkImportFolderSubtitle": "Імпорт кількох пультів з папки",
+  "exportBackup": "Експорт резервної копії",
+  "exportBackupSubtitle": "Збережіть пульти та макроси як один файл JSON у завантаженнях",
+  "restoreDemoRemotes": "Відновити демонстраційні пульти",
+  "restoreDemoRemotesSubtitle": "Замініть поточні пульти на вбудовану демонстрацію",
+  "deleteAllRemotes": "Видалити всі пульти",
+  "deleteAllRemotesSubtitle": "Видаліть усі пульти з цього пристрою",
+  "backupTip": "Порада: експортуйте резервну копію перед значними змінами. Імпорт підтримує повні резервні копії, застарілі резервні копії JSON лише з пультами, а також файли Flipper Zero .ir.",
+  "aboutTitle": "про",
+  "aboutSubtitle": "Інформація про програму та деталі з відкритого коду",
+  "aboutAppNameWithCreator": "ІЧ-бластер - {creator}",
+  "@aboutAppNameWithCreator": {
+    "placeholders": {
+      "creator": {}
+    }
+  },
+  "versionLabel": "Версія {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "sourceCode": "Вихідний код",
+  "viewOnGitHub": "Переглянути на GitHub",
+  "repositoryUrlCopied": "URL-адресу сховища скопійовано",
+  "reportIssue": "Повідомити про проблему",
+  "reportIssueSubtitle": "Звіти про помилки та запити щодо функцій",
+  "issuesUrlCopied": "URL-адресу проблеми скопійовано",
+  "license": "Ліцензія",
+  "openSourceLicense": "Ліцензія з відкритим кодом",
+  "licenseUrlCopied": "URL-адресу ліцензії скопійовано",
+  "companyName": "KaijinLab Inc.",
+  "visitWebsite": "Відвідайте наш сайт",
+  "companyUrlCopied": "URL-адресу компанії скопійовано",
+  "licenses": "Ліцензії",
+  "openSourceLicenses": "Ліцензії з відкритим кодом",
+  "byCreator": "від {creator}",
+  "@byCreator": {
+    "placeholders": {
+      "creator": {}
+    }
+  },
+  "deviceControlsTitle": "Елементи керування пристроєм",
+  "deviceControlsSubtitle": "Показати улюблені кнопки на сторінці елементів керування системою",
+  "manageFavorites": "Керуйте вибраним",
+  "manageFavoritesSubtitle": "Виберіть, які кнопки відображатимуться в елементах керування пристроєм",
+  "quickSettingsTitle": "Швидкі налаштування",
+  "quickSettingsSubtitle": "Додайте плитки для ярликів живлення та гучності",
+  "configureTiles": "Налаштувати плитки",
+  "configureTilesSubtitle": "Призначте кнопки пульта плиткам швидких налаштувань",
+  "tvKillTitle": "TVKill",
+  "tvKillSubtitle": "Універсальне відключення живлення для власних пристроїв",
+  "openTvKill": "Відкрийте TVKill",
+  "openTvKillSubtitle": "Перемикайте коди живлення (використовуйте лише на своїх пристроях)",
+  "failedToLoadTransmitterSettings": "Не вдалося завантажити налаштування передавача.",
+  "usbStatusReady": "USB-адаптер підключено та готовий до надсилання ІЧ-команд.",
+  "usbStatusPermissionRequired": "Виявлено USB-адаптер. Надішліть запит на дозвіл USB і підтвердьте системний запит.",
+  "usbStatusPermissionDenied": "Відмовлено в дозволі USB для під’єднаного ключа. Надішліть запит ще раз і підтвердьте запит.",
+  "usbStatusPermissionGranted": "Дозвіл USB надано. Ключ все ще потрібно ініціалізувати, перш ніж він зможе надсилати ІЧ-команди.",
+  "usbStatusOpenFailed": "Дозвіл USB надано, але ключ не вдалося ініціалізувати. Повторно підключіть його та повторіть спробу.",
+  "usbStatusNoDevice": "Не виявлено підтримуваного USB ІЧ-адаптера.",
+  "usbSelectPermissionRequired": "USB-адаптер виявлено, але не авторизовано. Натисніть «Запросити дозвіл USB».",
+  "usbSelectPermissionDenied": "У дозволі USB відмовлено. Торкніться «Запитувати дозвіл USB» і підтвердьте запит.",
+  "usbSelectPermissionGranted": "Дозвіл USB надано, але ключ ще не ініціалізовано. Спробуйте повторно підключити його.",
+  "usbSelectOpenFailed": "Дозвіл USB надано, але ключ не вдалося ініціалізувати. Повторно підключіть його та повторіть спробу.",
+  "usbSelectNoDevice": "Не виявлено підтримуваного USB ІЧ-адаптера. Підключіть його, а потім натисніть «Запитувати дозвіл USB».",
+  "usbSelectReady": "USB ключ готовий.",
+  "autoSwitchEnabledMessage": "Автоматичне перемикання ввімкнено: під час підключення використовується USB, інакше внутрішній.",
+  "autoSwitchDisabledMessage": "Автоматичне перемикання вимкнено: вибір передавача тепер ручний.",
+  "failedToUpdateAutoSwitch": "Не вдалося оновити налаштування автоматичного перемикання.",
+  "failedToSwitchTransmitter": "Не вдалося перемкнути передавач.",
+  "deviceHasNoInternalIr": "Цей пристрій не має вбудованого ІЧ-випромінювача.",
+  "audioModeEnabledMessage": "Аудіорежим увімкнено. Використовуйте максимальний об’єм медіа та світлодіодний адаптер аудіо-ІЧ.",
+  "usbPermissionRequestSent": "Запит на дозвіл USB надіслано.",
+  "usbPermissionRequestSentApprove": "Запит на дозвіл USB надіслано. Підтвердьте системний запит, щоб увімкнути USB.",
+  "usbAlreadyReady": "USB-адаптер уже ініціалізовано й готово до роботи.",
+  "failedToRequestUsbPermission": "Не вдалося запитати дозвіл USB.",
+  "transmitterHelpInternal": "Використовуйте вбудований ІЧ-випромінювач телефону для надсилання команд.",
+  "transmitterHelpUsb": "Для надсилання команд використовуйте USB ІЧ-адаптер (потрібен дозвіл).",
+  "transmitterHelpAudio1": "Використовуйте аудіовихід (моно). Потрібен світлодіодний адаптер аудіо-інфрачервоний світлодіод і велика гучність медіа.",
+  "transmitterHelpAudio2": "Використовуйте аудіовихід (стерео). Використовує два канали для покращеного керування світлодіодами за допомогою сумісних адаптерів.",
+  "transmitterInternal": "Внутрішній ІЧ",
+  "transmitterUsb": "USB ІЧ-адаптер",
+  "transmitterAudio1": "Аудіо (1 світлодіод)",
+  "transmitterAudio2": "Аудіо (2 світлодіоди)",
+  "failedToLoadTransmitterCapabilities": "Не вдалося завантажити можливості передавача.",
+  "selectedTransmitter": "Вибраний передавач",
+  "selectedTransmitterValue": "{effective} • Активний: {active}",
+  "@selectedTransmitterValue": {
+    "placeholders": {
+      "effective": {},
+      "active": {}
+    }
+  },
+  "refresh": "Оновити",
+  "autoSwitchTitle": "Автоперемикання",
+  "autoSwitchDisabledWhileAudio": "Вимкнено під час використання режиму аудіо",
+  "autoSwitchUsesUsbOtherwiseInternal": "Використовує USB під час підключення, інакше внутрішній",
+  "unavailableOnThisDevice": "Недоступно на цьому пристрої",
+  "openOnUsbAttachTitle": "Відкрити на USB-приєднанні",
+  "openOnUsbAttachSubtitle": "Android може запропонувати відкрити програму, коли під’єднано підтримуваний USB ІЧ-адаптер.",
+  "openOnUsbAttachEnabledMessage": "Буде запропоновано відкрити IR Blaster, коли під’єднано підтримуваний USB-адаптер.",
+  "openOnUsbAttachDisabledMessage": "Не пропонуватиму відкривати через USB-під’єднання.",
+  "failedToUpdateSetting": "Не вдалося оновити налаштування.",
+  "unnamedButton": "Кнопка без назви",
+  "iconFallback": "значок",
+  "remoteListReorderHint": "Режим зміни порядку: натисніть і перетягніть картку, щоб перемістити її.",
+  "deleteRemoteTitle": "Видалити пульт?",
+  "deleteRemoteMessage": "\"{name}\" буде остаточно видалено. Цю дію не можна скасувати.",
+  "@deleteRemoteMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "delete": "Видалити",
+  "addToDeviceControlsTitle": "Додати до елементів керування пристроєм?",
+  "addToDeviceControlsDescription": "Швидкий доступ до елементів управління пристроєм системи.",
+  "skip": "Пропустити",
+  "add": "додати",
+  "addedToDeviceControls": "Додано до елементів керування пристроєм.",
+  "deletedRemoteUndoUnavailable": "Видалено \"{name}\". Цю дію не можна скасувати.",
+  "@deletedRemoteUndoUnavailable": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "remoteLayoutSummary": "{count, plural, one{{count} кнопка} few{{count} кнопки} many{{count} кнопок} other{{count} кнопки}} · {layout}",
+  "@remoteLayoutSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "layout": {}
+    }
+  },
+  "layoutComfort": "Комфорт",
+  "layoutCompact": "Компактний",
+  "open": "відкритий",
+  "useThisRemote": "Використовуйте цей пульт",
+  "edit": "Редагувати",
+  "editRemoteSubtitle": "Кнопки перейменування та редагування",
+  "thisCannotBeUndone": "Це неможливо скасувати",
+  "searchRemotes": "Пошук пультів",
+  "reorderRemotes": "Змінити замовлення пультів",
+  "addRemote": "Додати пульт",
+  "more": "більше",
+  "reorderMode": "Режим зміни порядку",
+  "remoteButtonCount": "{count} кнопк{plural}",
+  "@remoteButtonCount": {
+    "placeholders": {
+      "count": {},
+      "plural": {}
+    }
+  },
+  "noRemotesYet": "Пультів ще немає",
+  "noRemotesDescription": "Створіть пульт, щоб розпочати надсилання ІЧ-кодів.",
+  "noRemotesNextStep": "Що далі: торкніться «Додати пульт», а потім додайте перші кнопки.",
+  "actions": "Дії",
+  "macrosTitle": "Макроси",
+  "help": "Довідка",
+  "createMacro": "Створити макрос",
+  "timedMacrosTitle": "Тимчасові макроси",
+  "timedMacrosSubtitle": "Автоматизуйте послідовності ІЧ-команд із точним синхронізацією",
+  "timedMacrosNextStep": "Що далі: натисніть «Створити свій перший макрос», виберіть пульт, а потім додайте команди та затримки.",
+  "macroFeatureToysTitle": "Ідеально підходить для інтерактивних іграшок",
+  "macroFeatureToysDescription": "Керуйте такими пристроями, як собаки-роботи i-cybie, роботи i-sobot та іншими іграшками, яким потрібен час між командами для обробки дій.",
+  "macroFeatureTimingTitle": "Точний контроль часу",
+  "macroFeatureTimingDescription": "Додайте затримки між командами (від 250 мс до спеціальної тривалості), щоб ваш пристрій мав час відповісти до наступної дії.",
+  "macroFeatureManualTitle": "Продовжити кроки вручну",
+  "macroFeatureManualDescription": "Призупиніть виконання та дочекайтеся вашого підтвердження, коли тривалість анімації змінюється або вам потрібен візуальний зворотний зв’язок.",
+  "exampleUseCase": "Приклад використання",
+  "macroExampleText": "Розширений режим i-cybie:\n1. Надіслати команду «Режим».\n2. Зачекайте 1000 мс (іграшкові процеси)\n3. Надіслати \"Дію 1\"\n4. Зачекайте 1000 мс\n5. Надіслати «Дію 2»\n…і так далі автоматично!",
+  "createFirstMacro": "Створіть свій перший макрос",
+  "noRemote": "Без пульта",
+  "macroStepCount": "{count} крок{plural}",
+  "@macroStepCount": {
+    "placeholders": {
+      "count": {},
+      "plural": {}
+    }
+  },
+  "aboutTimedMacros": "Про тимчасові макроси",
+  "aboutTimedMacrosDescription": "Тимчасові макроси дозволяють автоматизувати послідовності ІЧ-команд із точними затримками між кожним кроком.",
+  "sendCommand": "Надіслати команду",
+  "sendCommandDescription": "Передає ІЧ-команду з пульта.",
+  "delay": "Затримка",
+  "delayDescription": "Очікує певний час (наприклад, 1000 мс) перед наступним кроком.",
+  "manualContinue": "Продовжити вручну",
+  "manualContinueDescription": "Призупиняє виконання, доки ви не торкнете Продовжити (корисно для анімації змінної довжини).",
+  "gotIt": "зрозумів",
+  "failedToSaveMacros": "Не вдалося зберегти макроси.",
+  "deletedMacroNamed": "Видалено \"{name}\".",
+  "@deletedMacroNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "undo": "Скасувати",
+  "failedToRestoreMacro": "Не вдалося відновити макрос.",
+  "deleteMacroTitle": "Видалити макрос?",
+  "deleteMacroMessage": "Ви можете скасувати це на наступній панелі закусочних.",
+  "noRemotesAvailable": "Немає доступних пультів.",
+  "remoteButtonCountSummary": "{count, plural, one{{count} кнопка} few{{count} кнопки} many{{count} кнопок} other{{count} кнопки}}",
+  "@remoteButtonCountSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remoteOrientationFlippedTooltip": "Орієнтація: перевернуто (натисніть до нормального)",
+  "remoteOrientationNormalTooltip": "Орієнтація: нормальна (торкніться, щоб перевернути)",
+  "stopLoop": "Зупинити цикл",
+  "reorderButtons": "Змінити порядок кнопок",
+  "remoteReorderHint": "Режим зміни порядку: утримуйте та перетягуйте кнопку, щоб перемістити її.",
+  "manageRemote": "Керувати пультом",
+  "remoteNoButtons": "У цьому пульті немає кнопок",
+  "remoteNoButtonsDescription": "Використовуйте «Редагувати пульт», щоб додати або налаштувати кнопки.",
+  "editRemote": "Редагувати пульт",
+  "editRemoteActionsSubtitle": "Кнопки перейменування, зміни порядку та редагування",
+  "remoteUpdatedNamedButton": "Оновлено \"{name}\".",
+  "@remoteUpdatedNamedButton": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "buttonAddedNamed": "Додано \"{name}\".",
+  "@buttonAddedNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "buttonDuplicated": "Кнопка дублюється.",
+  "loopRunningForButton": "Для цієї кнопки виконується цикл.",
+  "loopTip": "Порада: використовуйте цикл, щоб повторювати, доки ви не зупините його.",
+  "loopingBadge": "Зациклення",
+  "codeCopied": "Код скопійовано.",
+  "copyCode": "Скопіюйте код",
+  "startLoop": "Почати цикл",
+  "editButtonSubtitle": "Змінити мітку, код, протокол, частоту",
+  "newButton": "Нова кнопка",
+  "newButtonSubtitle": "Створіть нову кнопку після цієї",
+  "duplicate": "дублікат",
+  "duplicateButtonSubtitle": "Створіть копію цієї кнопки",
+  "removeFromDeviceControls": "Видалити з елементів керування пристроєм",
+  "addToDeviceControls": "Додати до елементів керування пристроєм",
+  "deviceControlsButtonSubtitle": "Показує цю кнопку в елементах керування системним пристроєм",
+  "removedFromDeviceControls": "Видалено з елементів керування пристроєм.",
+  "pinQuickTile": "Закріпити в обраному для швидких плиток",
+  "unpinQuickTile": "Відкріпити з обраного для швидких плиток",
+  "quickTileButtonSubtitle": "Показує цю кнопку у верхній частині швидкого вибору плитки",
+  "removedFromQuickTileFavorites": "Видалено з вибраного Quick Tile.",
+  "pinnedToQuickTileFavorites": "Закріплено у вибраному Quick Tile.",
+  "duplicateAndEdit": "Скопіюйте та відредагуйте",
+  "duplicateAndEditSubtitle": "Створіть копію та негайно відредагуйте її",
+  "done": "Готово",
+  "run": "бігти",
+  "untitledRemote": "Пульт без назви",
+  "createRemoteTitle": "Створити пульт",
+  "editRemoteTitle": "Редагувати пульт",
+  "removeButtonTitle": "Видалити кнопку?",
+  "imageButtonRemovedMessage": "Ця кнопка із зображенням буде видалена.",
+  "namedButtonRemovedMessage": "\"{name}\" буде видалено.",
+  "@namedButtonRemovedMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "remove": "видалити",
+  "importedButtonCount": "{count, plural, one{Імпортовано {count} кнопку.} few{Імпортовано {count} кнопки.} many{Імпортовано {count} кнопок.} other{Імпортовано {count} кнопки.}}",
+  "@importedButtonCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importedButtonsFromExistingRemotes": "{count, plural, one{Імпортовано {count} кнопку з наявних пультів.} few{Імпортовано {count} кнопки з наявних пультів.} many{Імпортовано {count} кнопок з наявних пультів.} other{Імпортовано {count} кнопки з наявних пультів.}}",
+  "@importedButtonsFromExistingRemotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editButtonSettingsSubtitle": "Змініть мітку, сигнал і розширені налаштування",
+  "createButtonCopySubtitle": "Створіть копію цієї кнопки",
+  "duplicateAndEditButtonSubtitle": "Створіть копію та негайно відредагуйте її",
+  "undoAvailableInNextSnackbar": "Ви можете скасувати з наступної панелі завантажень",
+  "buttonRemoved": "Кнопка знята.",
+  "remoteNameCannotBeEmpty": "Назва пульта не може бути порожньою.",
+  "saveRemote": "Зберегти пульт",
+  "remoteName": "Назва пульта",
+  "remoteNameHint": "наприклад, телевізор, кондиціонер, світлодіодна стрічка",
+  "remoteNameHelper": "Ця назва відображатиметься у списку пультів.",
+  "layoutStyle": "Стиль оформлення",
+  "layoutWideDescription": "Широкий: 2-колонкові кнопки з додатковими деталями (рекомендовано).",
+  "layoutCompactDescription": "Компактний: класична сітка 4× (лише значки/текст).",
+  "importFromRemotes": "Імпорт з пультів",
+  "importFromDatabase": "Імпорт з БД",
+  "addButton": "Додати кнопку",
+  "noButtonsYet": "Ще немає кнопок",
+  "createRemoteEmptyStateDescription": "Додайте свою першу кнопку, а потім утримуйте її, щоб переглянути параметри редагування/видалення.",
+  "createButtonTitle": "Створити кнопку",
+  "editButtonTitle": "Кнопка редагування",
+  "failedToLoadProtocols": "Не вдалося завантажити протоколи: {error}",
+  "@failedToLoadProtocols": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToLoadDatabaseKeys": "Не вдалося завантажити ключі бази даних: {error}",
+  "@failedToLoadDatabaseKeys": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "presetPower": "Живлення",
+  "presetVolume": "Обсяг",
+  "presetChannel": "Канал",
+  "presetNavigation": "Навігація",
+  "all": "все",
+  "completeRequiredFieldsToSave": "Заповніть необхідні поля для збереження",
+  "buttonLabelStepTitle": "Мітка кнопки",
+  "buttonLabelStepSubtitle": "Виберіть зображення, значок або введіть текстову мітку.",
+  "buttonColorStepTitle": "Колір кнопки",
+  "buttonColorStepSubtitle": "Виберіть колір фону для цієї кнопки.",
+  "selectColor": "Виберіть колір:",
+  "noImageSelected": "Зображення не вибрано",
+  "gallery": "Галерея",
+  "builtIn": "Вбудований",
+  "removeImage": "Видалити зображення",
+  "requiredSelectImageOrSwitch": "Необхідно: виберіть зображення, виберіть піктограму або перейдіть до Тексту.",
+  "iconSelected": "Значок вибрано",
+  "noIconSelected": "Значок не вибрано",
+  "chooseIcon": "Виберіть значок",
+  "removeIcon": "Видалити значок",
+  "requiredSelectIconOrSwitch": "Необхідно: виберіть піктограму або перейдіть до зображення/тексту.",
+  "buttonText": "Текст кнопки",
+  "buttonTextHint": "наприклад, живлення, гучність +, HDMI 1",
+  "buttonTextHelper": "Цей текст з’явиться на кнопці.",
+  "requiredEnterButtonLabel": "Обов’язково: введіть назву кнопки.",
+  "defaultColorName": "За замовчуванням",
+  "newRemoteCreatedFromLastHit": "Новий пульт, створений однією кнопкою з останнього удару.",
+  "selectRemote": "Виберіть пульт",
+  "remoteNumber": "Пульт #{id}",
+  "@remoteNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "newRemoteCreated": "Створено новий пульт.",
+  "failedToCreateRemote": "Не вдалося створити пульт.",
+  "newRemoteEllipsis": "Новий пульт…",
+  "addedToRemoteNamed": "Додано до {name}.",
+  "@addedToRemoteNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "failedToAddToRemote": "Не вдалося додати на пульт.",
+  "newRemoteDefaultName": "Новий пульт",
+  "jumpedToOffsetPaused": "Перейшов до зсуву {offset}. Призупинено - натисніть Відновити, щоб продовжити.",
+  "@jumpedToOffsetPaused": {
+    "placeholders": {
+      "offset": {
+        "type": "int"
+      }
+    }
+  },
+  "sent": "Надіслано.",
+  "failedToSend": "Не вдалося надіслати: {error}",
+  "@failedToSend": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "copiedProtocolCode": "Скопійовано (протокол:код).",
+  "savedToResults": "Збережено в результатах.",
+  "invalidCodeForProtocol": "Недійсний код для протоколу: {error}",
+  "@invalidCodeForProtocol": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "copiedCurrentCandidate": "Скопійовано поточного кандидата.",
+  "jumpToOffset": "Перейти до зміщення",
+  "jumpToBruteCursor": "Перехід до грубого курсору",
+  "jump": "Стрибок",
+  "jumpedToCursorPaused": "Перейшов до курсору 0x{cursor}. Призупинено - натисніть Відновити, щоб продовжити.",
+  "@jumpedToCursorPaused": {
+    "placeholders": {
+      "cursor": {}
+    }
+  },
+  "irSignalTester": "Тестер ІЧ-сигналу",
+  "stop": "Стоп",
+  "selectButton": "Кнопка вибору",
+  "buttonNotFoundInRemotes": "Кнопка не знайдена в пультах.",
+  "sentNamed": "Надіслано \"{name}\".",
+  "@sentNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "sendFailed": "Не вдалося надіслати: {error}",
+  "@sendFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noFavoritesYet": "Вибраних ще немає",
+  "deviceControlsEmptyHint": "Утримуйте кнопку пульта та виберіть «Додати до елементів керування пристроєм».",
+  "sendTest": "Надіслати тест",
+  "testSendCompleted": "Тестове надсилання завершено.",
+  "testSendFailed": "Помилка тестового надсилання: {error}",
+  "@testSendFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "removedNamed": "Видалено \"{name}\".",
+  "@removedNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "brand": "Бренд",
+  "model": "Модель",
+  "selectBrand": "Виберіть бренд",
+  "searchBrand": "Шукати бренд…",
+  "selectModel": "Виберіть модель",
+  "searchModel": "Пошук моделі…",
+  "unnamedKey": "Безіменний ключ",
+  "unknown": "Невідомий",
+  "emDash": "-",
+  "searchCommands": "Команди пошуку",
+  "noMatchingCommands": "Немає відповідних команд",
+  "quickTileFavoritesTitle": "Швидкі вибрані плитки",
+  "changeMappingForTile": "Змінити відображення для плитки {tileLabel}",
+  "@changeMappingForTile": {
+    "placeholders": {
+      "tileLabel": {}
+    }
+  },
+  "pickDifferentButton": "Виберіть іншу кнопку",
+  "browseAllRemotesEllipsis": "Переглянути всі пульти…",
+  "invalidMacroFileFormat": "Недійсний формат файлу макросу.",
+  "failedToParseMacroFile": "Не вдалося проаналізувати файл макросу.",
+  "deviceCodeLabel": "Код пристрою",
+  "commandLabel": "Команда",
+  "editButtonCodeTitle": "Редагувати код кнопки",
+  "thisRemoteHasNoButtons": "Цей пульт не має кнопок.",
+  "selectCommand": "Виберіть команду",
+  "databaseModeAutofillHint": "Режим бази даних автоматично заповнює крок 2 для вас (бренд + модель + протокол). Після імпортування ключа ви можете вдосконалити будь-що вручну.",
+  "test": "Тест",
+  "allSelectedButtonsWereDuplicates": "Усі вибрані кнопки були дублікатами.",
+  "noButtonsImported": "Кнопки не імпортовано.",
+  "importedButtonsSkippedDuplicates": "Імпортовані кнопки {addedCount}. Пропущений дублікат(и) {skippedCount}.",
+  "@importedButtonsSkippedDuplicates": {
+    "placeholders": {
+      "addedCount": {
+        "type": "int"
+      },
+      "skippedCount": {
+        "type": "int"
+      }
+    }
+  },
+  "importAllMatchingTitle": "Імпортувати всі відповідні кнопки?",
+  "noMatchingKeysFound": "Не знайдено відповідних ключів.",
+  "importAllMatchingMessage": "Це імпортує до {count} відповідних ключів із поточного вибору бази даних.",
+  "@importAllMatchingMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importAll": "Імпортувати все",
+  "importingButtons": "Імпорт кнопок…",
+  "allMatchingButtonsWereDuplicates": "Усі відповідні кнопки були дублікатами.",
+  "quickPresets": "Швидкі налаштування",
+  "selectDeviceFirst": "Спочатку виберіть пристрій",
+  "searchByLabelOrHex": "Пошук за міткою або шістнадцятковим",
+  "optionalRefinePresetKeys": "Додатково: уточніть попередньо встановлені клавіші {preset}",
+  "@optionalRefinePresetKeys": {
+    "placeholders": {
+      "preset": {}
+    }
+  },
+  "selectBrandModelProtocolFirst": "Спочатку виберіть бренд, модель і протокол.",
+  "importFromDatabaseTitle": "Імпорт з бази даних",
+  "importFromDatabaseSubtitle": "Виберіть пристрій, завантажте відповідні ключі, а потім імпортуйте вибрані кнопки.",
+  "deviceAndFilters": "Пристрій і фільтри",
+  "loadedCount": "{count} завантажено",
+  "@loadedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hideFilters": "Сховати фільтри",
+  "showFilters": "Показати фільтри",
+  "noProtocolFoundForBrandModel": "Для цієї марки та моделі протокол не знайдено.",
+  "protocolAutoDetected": "Протокол",
+  "protocolAutoDetectedHelper": "Автоматично визначено з бази даних. Ви можете змінити його перед імпортом.",
+  "selectBrandModelToLoadKeys": "Виберіть бренд, модель і протокол для завантаження ключів.",
+  "noKeysFound": "Ключі не знайдено.",
+  "noKeysFoundForSearch": "Не знайдено ключів для “{query}”.",
+  "@noKeysFoundForSearch": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "skipDuplicates": "Пропустити дублікати",
+  "skipDuplicatesSubtitle": "Не імпортуйте кнопки, які вже існують на цьому пульті.",
+  "importSelected": "Вибрано імпорт",
+  "noMacrosToExport": "Немає макросів для експорту.",
+  "macrosExportedToDownloads": "Макроси експортовано до завантажень.",
+  "failedToExportMacros": "Не вдалося експортувати макроси.",
+  "failedToReadFile": "Не вдалося прочитати файл.",
+  "importFromExistingRemotesTitle": "Імпортувати з наявних пультів",
+  "selectedCount": "Вибрано {count}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noOtherRemotesWithButtons": "Інших пультів з кнопками не знайдено.",
+  "sourceRemote": "Пульт-джерело",
+  "searchButtons": "Кнопки пошуку",
+  "searchButtonsHint": "Живлення, гучність, вимкнення звуку...",
+  "selectVisible": "Виберіть видимий",
+  "clearVisible": "Ясно видно",
+  "protocolNamed": "Протокол: {name}",
+  "@protocolNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "rawSignal": "Сирий",
+  "legacyCode": "Застарілий код",
+  "importCount": "Імпортувати {count}",
+  "@importCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "storagePermissionDeniedLegacy": "У дозволі на зберігання відмовлено (потрібен на деяких старіших пристроях Android).",
+  "backupExportedToDownloads": "Резервну копію експортовано до завантажень.",
+  "failedToExport": "Не вдалося експортувати: {error}",
+  "@failedToExport": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "importedLegacyJsonBackup": "{count, plural, one{Імпортовано {count} пульт із застарілої резервної копії JSON. Макроси не змінено.} few{Імпортовано {count} пульти із застарілої резервної копії JSON. Макроси не змінено.} many{Імпортовано {count} пультів із застарілої резервної копії JSON. Макроси не змінено.} other{Імпортовано {count} пульта із застарілої резервної копії JSON. Макроси не змінено.}}",
+  "@importedLegacyJsonBackup": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importFailedRemotesMustBeList": "Помилка імпорту: резервні \"пульти\" мають бути списком JSON, якщо вони присутні.",
+  "importFailedMacrosMustBeList": "Помилка імпорту: резервні «макроси» мають бути списком JSON, якщо вони присутні.",
+  "importFailedInvalidBackupFormat": "Помилка імпорту: недійсний формат резервної копії (очікується застарілий список або карта з пультами/макросами).",
+  "importedBackupRemotesOnly": "{remoteCount, plural, one{Імпортовано {remoteCount} пульт із резервної копії. Макроси не змінено.} few{Імпортовано {remoteCount} пульти з резервної копії. Макроси не змінено.} many{Імпортовано {remoteCount} пультів із резервної копії. Макроси не змінено.} other{Імпортовано {remoteCount} пульта з резервної копії. Макроси не змінено.}}",
+  "@importedBackupRemotesOnly": {
+    "placeholders": {
+      "remoteCount": {
+        "type": "int"
+      }
+    }
+  },
+  "importedBackupRemotesAndMacros": "{remoteCount, plural, one{{remoteCount} пульт} few{{remoteCount} пульти} many{{remoteCount} пультів} other{{remoteCount} пульта}} і {macroCount, plural, one{{macroCount} макрос імпортовано} few{{macroCount} макроси імпортовано} many{{macroCount} макросів імпортовано} other{{macroCount} макросу імпортовано}} з резервної копії.",
+  "@importedBackupRemotesAndMacros": {
+    "placeholders": {
+      "remoteCount": {
+        "type": "int"
+      },
+      "macroCount": {
+        "type": "int"
+      }
+    }
+  },
+  "importFailedNoValidButtonsInIr": "Помилка імпорту: у файлі .ir не знайдено дійсних кнопок.",
+  "importedOneRemoteFromFlipper": "Імпортовано 1 пульт від Flipper .ir. Макроси не змінено.",
+  "importFailedInvalidIrplus": "Помилка імпорту: недійсний файл irplus (дійсних кнопок не знайдено).",
+  "importedOneRemoteFromIrplus": "Імпортовано 1 пульт з irplus. Макроси не змінено.",
+  "importFailedInvalidLirc": "Помилка імпорту: недійсний файл LIRC (дійсних кодів/необроблених кодів не знайдено).",
+  "importedOneRemoteFromLirc": "Імпортовано 1 пульт із конфігурації LIRC. Макроси не змінено.",
+  "unsupportedFileTypeSelected": "Вибрано непідтримуваний тип файлу.",
+  "importFailedInvalidUnreadableFile": "Помилка імпорту: недійсний або нечитабельний файл.",
+  "bulkImportNoSupportedFilesInFolder": "Масовий імпорт завершено: у папці не знайдено підтримуваних файлів.",
+  "bulkImportNoRemotesImported": "Масовий імпорт завершено: пульти не імпортовано. Пропущено файл(и) {skippedCount}.",
+  "@bulkImportNoRemotesImported": {
+    "placeholders": {
+      "skippedCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportComplete": "Масове імпортування завершено: імпортовано пульт(и) {importedCount} із підтримуваних файлів(ів) {supportedCount}. Пропущено файл(и) {skippedCount}.",
+  "@bulkImportComplete": {
+    "placeholders": {
+      "importedCount": {
+        "type": "int"
+      },
+      "supportedCount": {
+        "type": "int"
+      },
+      "skippedCount": {
+        "type": "int"
+      }
+    }
+  },
+  "storagePermissionDenied": "У дозволі на зберігання відмовлено.",
+  "bulkImportFailedReadFolder": "Помилка масового імпорту: неможливо прочитати вміст папки.",
+  "bulkImportNoSupportedFilesSource": "Масове імпортування завершено: підтримуваних файлів не знайдено ({sourceLabel}).",
+  "@bulkImportNoSupportedFilesSource": {
+    "placeholders": {
+      "sourceLabel": {}
+    }
+  },
+  "clearAction": "ясно",
+  "saveAction": "зберегти",
+  "buttonsTitleCount": "Кнопки ({count})",
+  "@buttonsTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invalidStepEncountered": "Виявлено недійсний крок",
+  "failedToSendNamed": "Не вдалося надіслати: {name}",
+  "@failedToSendNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "buttonNotFound": "Кнопку не знайдено",
+  "buttonNotFoundNamed": "Кнопку не знайдено: {name}",
+  "@buttonNotFoundNamed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "unknownButton": "Невідома кнопка",
+  "durationSecondsShort": "{seconds} с",
+  "@durationSecondsShort": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutesSecondsShort": "{minutes} хв {seconds} с",
+  "@durationMinutesSecondsShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHoursMinutesShort": "{hours} год {minutes} хв",
+  "@durationHoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "orientationFlippedTooltip": "Орієнтація: перевернуто (натисніть до нормального)",
+  "orientationNormalTooltip": "Орієнтація: нормальна (торкніться, щоб перевернути)",
+  "noSteps": "Без кроків",
+  "stepProgress": "Крок {current} / {total}",
+  "@stepProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "completed": "Виконано",
+  "paused": "Призупинено",
+  "running": "Біг",
+  "ready": "Готовий",
+  "stepsProgress": "Кроки {current} / {total}",
+  "@stepsProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "waiting": "Очікування",
+  "secondsRemaining": "Залишилося {seconds}s",
+  "@secondsRemaining": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "millisecondsShort": "{ms} мс",
+  "@millisecondsShort": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "tapContinueWhenReady": "Торкніться «Продовжити», коли будете готові до наступного кроку",
+  "error": "Помилка",
+  "macroCompleted": "Макрос завершено",
+  "finishedIn": "Завершено в {duration}",
+  "@finishedIn": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "sequence": "Послідовність",
+  "waitMilliseconds": "Зачекайте {ms}ms",
+  "@waitMilliseconds": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "runAgain": "Бігти знову",
+  "startMacro": "Запустити макрос",
+  "continueAction": "Продовжити",
+  "unnamedRemote": "Пульт без назви",
+  "enterMacroName": "Введіть назву макросу",
+  "addAtLeastOneStep": "Додайте хоча б один крок",
+  "fixInvalidSteps": "Виправте недійсні кроки",
+  "unknownCommand": "Невідома команда",
+  "unnamedCommand": "Безіменна команда",
+  "iconCommand": "Команда значка",
+  "selectDelay": "Виберіть Затримка",
+  "keepMilliseconds": "Зберегти: {ms}ms",
+  "@keepMilliseconds": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "custom": "Власний",
+  "enterCustomDelayDuration": "Введіть спеціальну тривалість затримки",
+  "millisecondsLong": "{ms} мілісекунд",
+  "@millisecondsLong": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "secondsLong": "{seconds} секунда{plural}",
+  "@secondsLong": {
+    "placeholders": {
+      "seconds": {},
+      "plural": {}
+    }
+  },
+  "customDelay": "Спеціальна затримка",
+  "delayMillisecondsLabel": "Затримка (мілісекунди)",
+  "delayMillisecondsHint": "наприклад, 3000",
+  "recommendedDelayRange": "Рекомендовано: 250-5000 мс для більшості пристроїв",
+  "enterValidPositiveNumber": "Введіть дійсне позитивне число",
+  "ok": "добре",
+  "remote": "Пульт",
+  "macroName": "Назва макросу",
+  "macroNameHint": "наприклад, розширений режим i-cybie",
+  "stepsTitleCount": "Кроки ({count})",
+  "@stepsTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noStepsYet": "Ще немає кроків",
+  "addCommandsAndDelaysHint": "Додайте команди та затримки нижче, щоб створити послідовність",
+  "addStep": "Додати крок",
+  "reorderStepsHint": "Порада: перетягніть маркер, щоб змінити порядок кроків. Торкніться кроку, щоб відредагувати його.",
+  "reorderStep": "Змініть порядок кроку {index}",
+  "@reorderStep": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "pressAndDragToChangeStepOrder": "Натисніть і перетягніть, щоб змінити порядок кроків",
+  "deleteStep": "Видалити крок {index}",
+  "@deleteStep": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "invalidStepTapToFix": "Недійсний крок – торкніться, щоб виправити",
+  "sendIrCommand": "Надіслати ІЧ-команду",
+  "waitForUserConfirmation": "Дочекайтеся підтвердження користувача",
+  "notImplemented": "Не реалізовано",
+  "frequencyKhz": "{value} кГц",
+  "@frequencyKhz": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "necProtocolShort": "NEC",
+  "msbShort": "MSB",
+  "layoutWide": "Широкий",
+  "iconButton": "Значок кнопки",
+  "imageButton": "Кнопка зображення",
+  "noSignalInfo": "Немає інформації про сигнал",
+  "proceed": "Продовжуйте",
+  "discard": "Відкинути",
+  "idle": "Бездіяльність",
+  "start": "старт",
+  "resume": "Резюме",
+  "pause": "Пауза",
+  "stopped": "Зупинився",
+  "copy": "Копіювати",
+  "send": "Надіслати",
+  "step": "Крок",
+  "addToRemote": "Додати на пульт",
+  "noDescriptionAvailable": "Немає опису.",
+  "notAvailableSymbol": "-",
+  "irFinderKaseikyoVendorInvalid": "Постачальник Kaseikyo має містити рівно 4 шістнадцяткові цифри.",
+  "irFinderDatabaseNotReady": "База даних ще не готова.",
+  "irFinderSelectBrandFirst": "Спочатку виберіть бренд у налаштуваннях.",
+  "irFinderBruteforceUnavailable": "Brute-force ще не доступний для цього протоколу.",
+  "irFinderInvalidPrefix": "Недійсний префікс.",
+  "irFinderBrandValue": "Бренд: {value}",
+  "@irFinderBrandValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderModelValue": "Модель: {value}",
+  "@irFinderModelValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderKeyValue": "Ключ: {value}",
+  "@irFinderKeyValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderRemoteNumber": "Пульт #{value}",
+  "@irFinderRemoteNumber": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderJumpOffsetHelper": "Введіть індекс на основі 0 у відфільтрованих упорядкованих результатах бази даних.",
+  "irFinderJumpCursorHelper": "Введіть шістнадцятковий курсор від нуля в область підбору.",
+  "irFinderSetupTab": "Налаштування",
+  "irFinderTestTab": "Тест",
+  "irFinderResultsTab": "Результати",
+  "irFinderContinueToTest": "Продовжуйте тестувати",
+  "irFinderKaseikyoVendorTitle": "Продавець Kaseikyo",
+  "irFinderCustomVendorLabel": "Спеціальний постачальник (4 шістнадцяткові)",
+  "irFinderBrowseDbCandidates": "Перегляд кандидатів БД…",
+  "irFinderEditSetup": "Редагувати налаштування",
+  "irFinderNoSavedHits": "Ще немає збережених звернень. На тестовій сторінці натисніть «Зберегти звернення», коли пристрій відповість.",
+  "irFinderBackToTest": "Назад до тесту",
+  "irFinderLargeSearchSpaceTitle": "Великий простір пошуку",
+  "irFinderLargeSearchSpaceBody": "Цей простір грубої сили дуже великий (можливості {human}). ІЧ-шукач все одно поважатиме ваші максимальні спроби та час відновлення, але пам’ятайте про спам із ІЧ-пристроїв.\n\nРекомендація: спочатку використовуйте режим бази даних і/або введіть відомі байти префікса, щоб зменшити простір.",
+  "@irFinderLargeSearchSpaceBody": {
+    "placeholders": {
+      "human": {}
+    }
+  },
+  "irFinderDatabaseSession": "Сеанс бази даних",
+  "irFinderBruteforceSession": "Сеанс грубої сили",
+  "irFinderResumeLastSession": "Відновити останній сеанс",
+  "irFinderResumeBrandModel": "Бренд: {brand} · Модель: {model}",
+  "@irFinderResumeBrandModel": {
+    "placeholders": {
+      "brand": {},
+      "model": {}
+    }
+  },
+  "irFinderResumePrefix": "Префікс: {value}",
+  "@irFinderResumePrefix": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderResumeProgress": "Прогрес: {progress} · Розпочато: {when}",
+  "@irFinderResumeProgress": {
+    "placeholders": {
+      "progress": {},
+      "when": {}
+    }
+  },
+  "irFinderApplyResume": "Подати заявку та відновити",
+  "irFinderBruteforceMode": "Груба сила",
+  "irFinderDatabaseAssistedMode": "За допомогою бази даних",
+  "irFinderProtocolTitle": "Протокол: {name}",
+  "@irFinderProtocolTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "irFinderProtocolLabel": "ІЧ-протокол",
+  "irFinderProtocolHelper": "Керує кодуванням і, отже, простором пошуку.",
+  "irFinderKnownPrefixLabel": "Відомий префікс (шістнадцяткові байти, необов’язково)",
+  "irFinderKnownPrefixHint": "A1B2, A1 B2, A1:B2, 0xA1 0xB2",
+  "irFinderKnownPrefixHelperPayload": "Корисне навантаження: {digits} шістнадцяткові цифри",
+  "@irFinderKnownPrefixHelperPayload": {
+    "placeholders": {
+      "digits": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderKnownPrefixHelperPayloadExample": "Корисне навантаження: {digits} шістнадцяткові цифри · Приклад: {example}",
+  "@irFinderKnownPrefixHelperPayloadExample": {
+    "placeholders": {
+      "digits": {
+        "type": "int"
+      },
+      "example": {}
+    }
+  },
+  "irFinderKnownPrefixHelperPayloadMax": "Корисне навантаження: {digits} шістнадцяткова цифра(и) · Макс. префікс: {bytes} байт(и)",
+  "@irFinderKnownPrefixHelperPayloadMax": {
+    "placeholders": {
+      "digits": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderKnownPrefixHelperPayloadExampleMax": "Корисне навантаження: {digits} шістнадцяткова цифра(и) · Приклад: {example} · Макс. префікс: {bytes} байт(и)",
+  "@irFinderKnownPrefixHelperPayloadExampleMax": {
+    "placeholders": {
+      "digits": {
+        "type": "int"
+      },
+      "example": {},
+      "bytes": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderKnownPrefixHelperExample": "Приклад: {example}",
+  "@irFinderKnownPrefixHelperExample": {
+    "placeholders": {
+      "example": {}
+    }
+  },
+  "irFinderKnownPrefixHelperFallback": "Введіть будь-які відомі перші байти, щоб зменшити простір пошуку.",
+  "irFinderDatabaseMode": "База даних",
+  "irFinderNormalizedPrefixValue": "Нормований префікс: {value}",
+  "@irFinderNormalizedPrefixValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderNormalizedPrefix": "Нормований префікс",
+  "irFinderBruteforceNotConfigured": "Brute-force ще не налаштовано для цього протоколу.",
+  "irFinderAllLimit": "Усі ({value})",
+  "@irFinderAllLimit": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderTestControls": "Тестовий контроль",
+  "irFinderPayloadLength": "Довжина корисного навантаження: {digits} шістнадцяткова цифра(и).",
+  "@irFinderPayloadLength": {
+    "placeholders": {
+      "digits": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderSearchSpace": "Простір пошуку: можливості {value} (після обмежень префікса).",
+  "@irFinderSearchSpace": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderCooldownMs": "Перезарядка (мс)",
+  "irFinderMaxAttemptsPerRun": "Максимальна кількість спроб (за пробіжку)",
+  "irFinderTestAllCombinations": "Перевірте всі комбінації",
+  "irFinderTestAllCombinationsHint": "Працює, доки не буде вичерпано простір пошуку. Ефективний ліміт: {value}",
+  "@irFinderTestAllCombinationsHint": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderAttempts": "Спроби",
+  "irFinderAttemptsSliderRange": "Діапазон повзунка: 1–{max} (введіть будь-яке число для більших значень)",
+  "@irFinderAttemptsSliderRange": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderMaxButton": "Макс\n{value}",
+  "@irFinderMaxButton": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderEffectiveLimitThisRun": "Ефективний ліміт цього запуску: {value}",
+  "@irFinderEffectiveLimitThisRun": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderBruteforceTip": "Порада: спочатку використовуйте режим бази даних; brute-force найкраще з відомим префіксом (наприклад, перші 1–4 байти).",
+  "irFinderDatabaseInitFailed": "Помилка ініціалізації бази даних.",
+  "irFinderPreparingDatabase": "Підготовка локальної бази даних ІЧ-кодів…",
+  "irFinderDatabaseAssistedSearch": "Пошук за допомогою бази даних",
+  "irFinderBrand": "Бренд",
+  "irFinderSelectBrand": "Виберіть бренд",
+  "irFinderModelOptional": "Модель (необов'язково)",
+  "irFinderSelectBrandFirstShort": "Спочатку виберіть бренд",
+  "irFinderSelectModelRecommended": "Виберіть модель (рекомендовано)",
+  "irFinderOnlySelectedProtocol": "Лише обраний протокол",
+  "irFinderOnlySelectedProtocolHint": "Фільтрує ключі до вибраного протоколу. Вимкніть його, щоб переглянути всі протоколи.",
+  "irFinderQuickWinsFirst": "Швидкий перемагає першим",
+  "irFinderQuickWinsFirstHint": "Надає перевагу клавішам POWER, MUTE, VOL і CH перед більш глибокими клавішами.",
+  "irFinderMaxKeysPerRun": "Максимальна кількість ключів для тестування (за запуск)",
+  "irFinderTesting": "Тестування…",
+  "irFinderCooldown": "Кулдаун",
+  "irFinderEta": "Залишилося",
+  "irFinderMode": "Режим",
+  "irFinderRetryLast": "Повторіть останню",
+  "irFinderTrigger": "Тригер",
+  "irFinderJump": "Стрибок…",
+  "irFinderSaveHit": "Зберегти удар",
+  "irFinderEtaSeconds": "{seconds} с",
+  "@irFinderEtaSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderEtaMinutesSeconds": "{minutes} хв {seconds} с",
+  "@irFinderEtaMinutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderEtaHoursMinutes": "{hours} год {minutes} хв",
+  "@irFinderEtaHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "irFinderLastAttemptedCode": "Код останньої спроби: {value}",
+  "@irFinderLastAttemptedCode": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderStartTestingToSeeLastCode": "Почніть тестування, щоб побачити останній спробований код.",
+  "irFinderFromDb": "З БД: {value}",
+  "@irFinderFromDb": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderFromBruteforce": "З грубої сили (генерується кодувальником протоколу).",
+  "irFinderSendError": "Помилка надсилання: {error}",
+  "@irFinderSendError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "irFinderSourceValue": "Джерело: {value}",
+  "@irFinderSourceValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "irFinderResultsNote": "Результати підтримують тестування та копіювання негайно. Інтеграцію прямого додавання до пульта можна розширити далі в процесі редактора.",
+  "irFinderBrowseDbCandidatesTitle": "Перегляньте кандидати БД",
+  "irFinderFilterByLabelOrHex": "Фільтрувати за міткою або шістнадцятковим…",
+  "irFinderJumpHere": "Стрибай сюди",
+  "irFinderSelectModel": "Виберіть модель",
+  "irFinderSearchBrands": "Пошук брендів…",
+  "irFinderSearchModels": "Пошук моделей…",
+  "iconPickerTitle": "Виберіть значок",
+  "iconPickerSearchHint": "Значки пошуку...",
+  "iconPickerNoIconsFound": "Значок не знайдено",
+  "iconPickerIconsAvailable": "Доступні значки {count}",
+  "@iconPickerIconsAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "iconPickerCategoryAll": "все",
+  "iconPickerCategoryMedia": "ЗМІ",
+  "iconPickerCategoryVolume": "Обсяг",
+  "iconPickerCategoryNavigation": "Навігація",
+  "iconPickerCategoryPower": "Живлення",
+  "iconPickerCategoryNumbers": "Числа",
+  "iconPickerCategorySettings": "Налаштування",
+  "iconPickerCategoryDisplay": "Дисплей",
+  "iconPickerCategoryInput": "Введення",
+  "iconPickerCategoryFavorite": "улюблений",
+  "universalPowerTitle": "Універсальна сила",
+  "universalPowerRunTab": "бігти",
+  "universalPowerUseResponsibly": "Використовуйте відповідально",
+  "universalPowerConsentBody": "Універсальні цикли живлення ІЧ-коди живлення. Використовуйте його лише на пристроях, якими володієте чи керуєте. Зупиніть, як тільки пристрій відреагує.",
+  "universalPowerConsentCheckbox": "Я володію або керую пристроєм",
+  "universalPowerSetupBody": "Циклує коди живлення для вибраного бренду. Зупиніть, як тільки пристрій відреагує.",
+  "universalPowerLastSent": "Востаннє надіслано: {value}",
+  "@universalPowerLastSent": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "universalPowerNoCodesFound": "Не знайдено кодів живлення. Спробуйте розширити пошук.",
+  "universalPowerUnableToStart": "Неможливо запустити.",
+  "universalPowerAllBrands": "Усі марки (без фільтра)",
+  "universalPowerClearBrandFilter": "Очистити фільтр бренду",
+  "universalPowerBroadenSearch": "За потреби розширте пошук",
+  "universalPowerBroadenSearchHint": "Якщо ярлики живлення не знайдені, додайте інші ключі.",
+  "universalPowerAdditionalPatternsDepth": "Додаткова глибина візерунків",
+  "universalPowerDepth1": "Лише пріоритет: ЖИВЛЕННЯ/ВИМК",
+  "universalPowerDepth2": "Додайте псевдоніми POWER",
+  "universalPowerDepth3": "Додайте вторинні мітки живлення",
+  "universalPowerDepth4": "Включити всі мітки (найнижчий пріоритет)",
+  "universalPowerLoopUntilStopped": "Цикл до зупинки",
+  "universalPowerLoopUntilStoppedHint": "Продовжує чергувати чергу, доки ви її не зупините.",
+  "universalPowerDelayBetweenCodes": "Затримка між кодами",
+  "universalPowerStart": "Запустіть Universal Power",
+  "universalPowerRunStatus": "Статус запуску",
+  "universalPowerProgress": "Прогрес: {value}",
+  "@universalPowerProgress": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "universalPowerPausedInBackground": "Призупинено, оскільки програма працювала у фоновому режимі.",
+  "universalPowerSendOneCode": "Надішліть один код",
+  "universalPowerStopWhenDeviceResponds": "Зупиніть, як тільки пристрій відреагує.",
+  "iconNamePlay": "грати",
+  "iconNamePause": "Пауза",
+  "iconNameStop": "Стоп",
+  "iconNameFastForward": "Перемотування вперед",
+  "iconNameRewind": "Перемотати назад",
+  "iconNameSkipNext": "Пропустити далі",
+  "iconNameSkipPrevious": "Пропустити попередній",
+  "iconNameReplay": "Повтор",
+  "iconNameForward10S": "Вперед 10с",
+  "iconNameForward30S": "Вперед 30с",
+  "iconNameReplay10S": "Повторити 10 секунд",
+  "iconNameReplay30S": "Повтор 30-х років",
+  "iconNameRecord": "запис",
+  "iconNameRecordAlt": "Запис Alt",
+  "iconNameEject": "Витягнути",
+  "iconNameShuffle": "Перетасувати",
+  "iconNameRepeat": "Повторіть",
+  "iconNameRepeatOne": "Повторіть один",
+  "iconNameVolumeUp": "Збільшення гучності",
+  "iconNameVolumeDown": "Зменшення гучності",
+  "iconNameVolumeOff": "Вимкнення гучності",
+  "iconNameMute": "Вимкнути звук",
+  "iconNameSpeaker": "Спікер",
+  "iconNameSurroundSound": "Об'ємний звук",
+  "iconNameEqualizer": "Еквалайзер",
+  "iconNameAudio": "Аудіо",
+  "iconNameMicrophone": "мікрофон",
+  "iconNameMicOff": "Мікрофон вимкнено",
+  "iconNameUp": "вгору",
+  "iconNameDown": "вниз",
+  "iconNameLeft": "Ліворуч",
+  "iconNameRight": "правильно",
+  "iconNameArrowUp": "Стрілка вгору",
+  "iconNameArrowDown": "Стрілка вниз",
+  "iconNameArrowLeft": "Стрілка вліво",
+  "iconNameArrowRight": "Стрілка вправо",
+  "iconNameNavigation": "Навігація",
+  "iconNameChevronLeft": "Шеврон ліворуч",
+  "iconNameChevronRight": "Шеврон справа",
+  "iconNameExpandLess": "Розгорнути менше",
+  "iconNameExpandMore": "Розгорнути Більше",
+  "iconNameCollapse": "Згорнути",
+  "iconNameExpand": "Розгорнути",
+  "iconNameCircleUp": "Круг вгору",
+  "iconNameCircleDown": "Круг вниз",
+  "iconNameCircleLeft": "Круг ліворуч",
+  "iconNameCircleRight": "Круг Праворуч",
+  "iconNameOkSelect": "OK/Вибрати",
+  "iconNameConfirm": "Підтвердити",
+  "iconNameCancel": "Скасувати",
+  "iconNameClose": "Закрити",
+  "iconNameHome": "додому",
+  "iconNameReturn": "Повернення",
+  "iconNameExit": "Вихід",
+  "iconNameUndo": "Скасувати",
+  "iconNameRedo": "Повторити",
+  "iconNamePower": "Живлення",
+  "iconNamePowerAlt": "Живлення, альтернативна",
+  "iconNamePowerOff": "Вимкнення",
+  "iconNameOn": "Увімкнено",
+  "iconNameOff": "Вимкнено",
+  "iconNameToggleOn": "Увімкнути",
+  "iconNameToggleOff": "Вимкнути",
+  "iconNameRestart": "Перезапустіть",
+  "iconNameNum1": "1",
+  "iconNameNum2": "2",
+  "iconNameNum3": "3",
+  "iconNameNum4": "4",
+  "iconNameNum5": "5",
+  "iconNameNum6": "6",
+  "iconNameNum7": "7",
+  "iconNameNum8": "8",
+  "iconNameNum9": "9",
+  "iconNameNum92": "9+",
+  "iconNameNum0": "0",
+  "iconNameOne": "Один",
+  "iconNameTwo": "Два",
+  "iconNameThree": "три",
+  "iconNameFour": "чотири",
+  "iconNameFive": "П'ять",
+  "iconNameSix": "Шість",
+  "iconNamePlus": "плюс",
+  "iconNameMinus": "Мінус",
+  "iconNameAddCircle": "Додати коло",
+  "iconNameRemoveCircle": "Видалити коло",
+  "iconNameSettings": "Налаштування",
+  "iconNameMenu": "Меню",
+  "iconNameMoreVertical": "Більш вертикально",
+  "iconNameMoreHorizontal": "Більше горизонтально",
+  "iconNameTune": "Налаштувати",
+  "iconNameRemoteSettings": "Налаштування пульта",
+  "iconNameInfo": "Інформація",
+  "iconNameInfoOutline": "Конспект інформації",
+  "iconNameHelp": "Довідка",
+  "iconNameHelpOutline": "План довідки",
+  "iconNameList": "Список",
+  "iconNameViewList": "Переглянути список",
+  "iconNameViewGrid": "Перегляд сітки",
+  "iconNameApps": "програми",
+  "iconNameWidgets": "Віджети",
+  "iconNameTv": "телевізор",
+  "iconNameMonitor": "Монітор",
+  "iconNameDesktop": "Робочий стіл",
+  "iconNameBrightnessHigh": "Висока яскравість",
+  "iconNameBrightnessMedium": "Яскравість Середня",
+  "iconNameBrightnessLow": "Низька яскравість",
+  "iconNameAutoBrightness": "Автоматична яскравість",
+  "iconNameLightMode": "Світловий режим",
+  "iconNameDarkMode": "Темний режим",
+  "iconNameContrast": "Контраст",
+  "iconNameHdrOn": "HDR увімкнено",
+  "iconNameHdrOff": "HDR вимкнено",
+  "iconNameAspectRatio": "Співвідношення сторін",
+  "iconNameCrop": "кадрування",
+  "iconNameZoomIn": "Збільшити",
+  "iconNameZoomOut": "Зменшити",
+  "iconNameFullscreen": "Повний екран",
+  "iconNameExitFullscreen": "Вийти з повноекранного режиму",
+  "iconNameFitScreen": "За розміром екрана",
+  "iconNamePip": "PiP",
+  "iconNameCropFree": "Обрізати безкоштовно",
+  "iconNameInput": "Введення",
+  "iconNameCable": "Кабель",
+  "iconNameCast": "акторський склад",
+  "iconNameCastConnected": "Трансляцію підключено",
+  "iconNameScreenShare": "Поділитися екраном",
+  "iconNameBluetooth": "Bluetooth",
+  "iconNameWifi": "WiFi",
+  "iconNameRouter": "Маршрутизатор",
+  "iconNameMemory": "Пам'ять",
+  "iconNameGameConsole": "Ігрова консоль",
+  "iconNameGaming": "Ігри",
+  "iconNameMedia": "ЗМІ",
+  "iconNameMusicQueue": "Музична черга",
+  "iconNameVideoLibrary": "Відеотека",
+  "iconNamePhotoLibrary": "Бібліотека фотографій",
+  "iconNameComponent": "компонент",
+  "iconNameHdmi": "HDMI",
+  "iconNameComposite": "Композитний",
+  "iconNameAntenna": "антена",
+  "iconNameFavorite": "улюблений",
+  "iconNameFavoriteOutline": "Улюблений план",
+  "iconNameStar": "зірка",
+  "iconNameStarOutline": "Контур зірки",
+  "iconNameBookmark": "Закладка",
+  "iconNameBookmarkOutline": "Контур закладки",
+  "iconNameFlag": "Прапор",
+  "iconNameCheck": "Перевірте",
+  "iconNameDone": "Готово",
+  "iconNameDoneAll": "Готово все",
+  "iconNameSchedule": "розклад",
+  "iconNameTimer": "Таймер",
+  "iconNameTime": "час",
+  "iconNameAlarm": "сигналізація",
+  "iconNameNotifications": "Сповіщення",
+  "iconNameLock": "Замок",
+  "iconNameUnlock": "Розблокувати",
+  "iconNameLight": "світло",
+  "iconNameLightOutline": "Легкий контур",
+  "iconNameWarmLight": "Тепле світло",
+  "iconNameSunny": "Сонячно",
+  "iconNameCloudy": "Хмарно",
+  "iconNameNight": "ніч",
+  "iconNameFlare": "Відблиск",
+  "iconNameGradient": "Градієнт",
+  "iconNameInvertColors": "Інвертувати кольори",
+  "iconNamePalette": "Палітра",
+  "iconNameColor": "Колір",
+  "iconNameTonality": "Тональність",
+  "iconNameSearch": "Пошук",
+  "iconNameRefresh": "Оновити",
+  "iconNameSync": "Синхронізувати",
+  "iconNameUpdate": "Оновлення",
+  "iconNameDownload": "Завантажити",
+  "iconNameUpload": "Завантажити",
+  "iconNameCloud": "Хмара",
+  "iconNameFolder": "Папка",
+  "iconNameDelete": "Видалити",
+  "iconNameEdit": "Редагувати",
+  "iconNameSave": "зберегти",
+  "iconNameShare": "Поділіться",
+  "iconNamePrint": "Роздрукувати",
+  "iconNameLanguage": "Мова",
+  "iconNameTranslate": "Перекласти",
+  "iconNameMicNone": "Мікрофон Немає",
+  "iconNameSubtitles": "Субтитри",
+  "iconNameClosedCaption": "Субтитри",
+  "iconNameMusic": "музика",
+  "iconNameMovie": "фільм",
+  "iconNameTheater": "Театр",
+  "iconNameLiveTv": "Пряме телебачення",
+  "iconNameRadio": "радіо",
+  "iconNameCamera": "Камера",
+  "iconNameVideoCamera": "Відеокамера",
+  "iconNamePhotoCamera": "Фотоапарат",
+  "iconNameSlowMotion": "Повільний рух",
+  "iconNameSpeed": "швидкість",
+  "iconNameVideoSettings": "Налаштування відео",
+  "iconNameAudioTrack": "Аудіодоріжка",
+  "iconNameGraphicEq": "Графічний еквалайзер",
+  "iconNameMusicVideo": "Музичне відео",
+  "iconNamePlaylist": "Список відтворення",
+  "iconNameQueue": "Черга",
+  "iconNameNum0Fa": "0 FA",
+  "iconNameNum1Fa": "1 FA",
+  "iconNameNum2Fa": "2 FA",
+  "iconNameNum3Fa": "3 FA",
+  "iconNameNum4Fa": "4 FA",
+  "iconNameNum5Fa": "5 FA",
+  "iconNameNum6Fa": "6 FA",
+  "iconNameNum7Fa": "7 FA",
+  "iconNameNum8Fa": "8 FA",
+  "iconNameNum9Fa": "9 FA",
+  "iconNameHashFa": "Хеш # FA",
+  "iconNamePercentFa": "Відсоток % FA",
+  "iconNameDivideFa": "Ділення ÷ FA",
+  "iconNameMultiplyFa": "Множення × FA",
+  "iconNameEqualsFa": "Дорівнює = FA",
+  "iconNameNotEqualFa": "Не дорівнює ≠ FA",
+  "iconNameGreaterThanFa": "Більше ніж > FA",
+  "iconNameLessThanFa": "Менше < FA",
+  "iconNameAsteriskFa": "Зірочка * FA",
+  "iconNameAFa": "FA",
+  "iconNameBFa": "B FA",
+  "iconNameCFa": "C FA",
+  "iconNameDFa": "D FA",
+  "iconNameEFa": "E FA",
+  "iconNameFFa": "F FA",
+  "iconNameGFa": "G FA",
+  "iconNameHFa": "H FA",
+  "iconNameIFa": "I FA",
+  "iconNameJFa": "J FA",
+  "iconNameKFa": "K FA",
+  "iconNameLFa": "L FA",
+  "iconNameMFa": "M FA",
+  "iconNameNFa": "N FA",
+  "iconNameOFa": "O FA",
+  "iconNamePFa": "P FA",
+  "iconNameQFa": "Q FA",
+  "iconNameRFa": "R FA",
+  "iconNameSFa": "S FA",
+  "iconNameTFa": "T FA",
+  "iconNameUFa": "U FA",
+  "iconNameVFa": "V FA",
+  "iconNameWFa": "W FA",
+  "iconNameXFa": "X FA",
+  "iconNameYFa": "Y FA",
+  "iconNameZFa": "Z FA",
+  "iconNamePlayFa": "Грати в FA",
+  "iconNamePauseFa": "Пауза FA",
+  "iconNameStopFa": "Зупинити FA",
+  "iconNamePlayFaOutline": "Грати в FA Outline",
+  "iconNamePauseFaOutline": "Призупинити схему FA",
+  "iconNameStopFaOutline": "Зупинити FA Outline",
+  "iconNameBackwardFa": "Назад FA",
+  "iconNameForwardFa": "Нападник FA",
+  "iconNamePreviousFa": "Попередній FA",
+  "iconNameNextFa": "Наступний FA",
+  "iconNameRewindFa": "Перемотати FA",
+  "iconNameFastForwardFa": "Перемотування вперед FA",
+  "iconNameRepeatFa": "Повторіть FA",
+  "iconNameShuffleFa": "Перетасувати FA",
+  "iconNameEjectFa": "Викинути FA",
+  "iconNameFilmFa": "Фільм FA",
+  "iconNameVideoFa": "Відео FA",
+  "iconNameMusicFa": "Музика FA",
+  "iconNameMicrophoneFa": "Мікрофон FA",
+  "iconNameCameraFa": "Камера FA",
+  "iconNameCameraRetroFa": "Камера ретро FA",
+  "iconNameVolumeHighFa": "Високий об'єм FA",
+  "iconNameVolumeLowFa": "Низька гучність FA",
+  "iconNameVolumeOffFa": "Вимкнення гучності FA",
+  "iconNameMuteFa": "Вимкнути FA",
+  "iconNameMicMuteFa": "Вимкнення мікрофона FA",
+  "iconNameHeadphonesFa": "Навушники FA",
+  "iconNameSpeakerFa": "Доповідач Ф.А",
+  "iconNameUpFa": "Вгору FA",
+  "iconNameDownFa": "Вниз FA",
+  "iconNameLeftFa": "Ліворуч FA",
+  "iconNameRightFa": "Справа FA",
+  "iconNameUpFaOutline": "Вгору FA Схема",
+  "iconNameDownFaOutline": "Вниз, контур FA",
+  "iconNameLeftFaOutline": "Лівий контур FA",
+  "iconNameRightFaOutline": "Правий контур FA",
+  "iconNameArrowUpFa": "Стрілка вгору FA",
+  "iconNameArrowDownFa": "Стрілка вниз FA",
+  "iconNameArrowLeftFa": "Стрілка вліво FA",
+  "iconNameArrowRightFa": "Стрілка вправо FA",
+  "iconNameChevronUpFa": "Шеврон угору FA",
+  "iconNameChevronDownFa": "Шеврон униз FA",
+  "iconNameChevronLeftFa": "Chevron лівий FA",
+  "iconNameChevronRightFa": "Шеврон праворуч FA",
+  "iconNameOkFa": "OK FA",
+  "iconNameOkFaOutline": "OK FA Схема",
+  "iconNameCheckFa": "Перевірте FA",
+  "iconNameCloseFa": "Закрити FA",
+  "iconNameCloseCircleFa": "Замкнути коло FA",
+  "iconNameHomeFa": "Головна FA",
+  "iconNameUndoFa": "Скасувати FA",
+  "iconNameRedoFa": "Повторити FA",
+  "iconNameRotateFa": "Обертати FA",
+  "iconNameSearchFa": "Пошук FA",
+  "iconNameRefreshFa": "Оновити FA",
+  "iconNamePowerOffFa": "Вимкнення FA",
+  "iconNamePlugFa": "Вилка FA",
+  "iconNameToggleOnFa": "Увімкнути FA",
+  "iconNameToggleOffFa": "Вимкніть FA",
+  "iconNameSettingsFa": "Налаштування FA",
+  "iconNameSettingsAltFa": "Налаштування Alt FA",
+  "iconNameMenuFa": "Меню FA",
+  "iconNameMoreFa": "Більше FA",
+  "iconNameMoreVerticalFa": "Більш вертикальний FA",
+  "iconNameInfoFa": "Інформація FA",
+  "iconNameInfoFaOutline": "Інформація FA Схема",
+  "iconNameHelpFa": "Довідка FA",
+  "iconNameHelpFaOutline": "Довідка FA Схема",
+  "iconNameListFa": "Список FA",
+  "iconNameGridFa": "Сітка FA",
+  "iconNameSlidersFa": "Повзунки FA",
+  "iconNameTvFa": "ТБ FA",
+  "iconNameMonitorFa": "Монітор FA",
+  "iconNameDesktopFa": "Настільний FA",
+  "iconNameBrightnessFa": "Яскравість FA",
+  "iconNameNightModeFa": "Нічний режим FA",
+  "iconNameLightFa": "Світло FA",
+  "iconNameLightFaOutline": "Світло, контур FA",
+  "iconNameFlashFa": "Спалах FA",
+  "iconNameFullscreenFa": "Повноекранний FA",
+  "iconNameExitFullscreenFa": "Вийти з повноекранного режиму FA",
+  "iconNameZoomInFa": "Збільшити FA",
+  "iconNameZoomOutFa": "Зменшити FA",
+  "iconNameSubtitlesFa": "Субтитри FA",
+  "iconNamePictureInPictureFa": "Картинка в картинці FA",
+  "iconNameColorFa": "Колір FA",
+  "iconNamePaintFa": "Фарба FA",
+  "iconNameInputFa": "Вхід FA",
+  "iconNameWifiFa": "WiFi FA",
+  "iconNameBluetoothFa": "Bluetooth FA",
+  "iconNameUsbFa": "USB FA",
+  "iconNameEthernetFa": "Ethernet FA",
+  "iconNameGamepadFa": "Геймпад FA",
+  "iconNameBroadcastFa": "Трансляція FA",
+  "iconNameSatelliteFa": "Супутник FA",
+  "iconNameAntennaFa": "Антена FA",
+  "iconNameNetworkFa": "Мережа FA",
+  "iconNameCloudFa": "Хмара FA",
+  "iconNameStarFa": "Зірка FA",
+  "iconNameStarFaOutline": "Контур Star FA",
+  "iconNameHeartFa": "Серце FA",
+  "iconNameHeartFaOutline": "Серце FA контур",
+  "iconNameBookmarkFa": "Закладка FA",
+  "iconNameBookmarkFaOutline": "Закладка FA Outline",
+  "iconNameFlagFa": "Прапор FA",
+  "iconNameClockFa": "Годинник FA",
+  "iconNameClockFaOutline": "Годинник FA Контур",
+  "iconNameBellFa": "Дзвоник Ф.А",
+  "iconNameBellFaOutline": "Белл Ф.А. План",
+  "iconNameTimerFa": "Таймер FA",
+  "iconNameLockFa": "Замок FA",
+  "iconNameUnlockFa": "Розблокувати FA",
+  "iconNameGalleryFa": "Галерея FA",
+  "iconNameImagesFa": "Зображення FA",
+  "iconNameImageFa": "Зображення FA",
+  "iconNameVideoFileFa": "Відеофайл FA",
+  "iconNameAudioFileFa": "Аудіофайл FA",
+  "iconNamePlayOutlineFa": "Грати в Outline FA",
+  "iconNamePlaySimpleFa": "Грати в Simple FA",
+  "iconNamePauseSimpleFa": "Пауза Проста FA",
+  "iconNameStopSimpleFa": "Проста зупинка FA",
+  "iconNameRecordFa": "Запис FA",
+  "iconNameStopCircleFa": "Стоп Круг FA",
+  "iconNameLoadingFa": "Завантаження FA",
+  "iconNameTextFa": "Текст FA",
+  "iconNameTextSizeFa": "Розмір тексту FA",
+  "iconNameLanguageFa": "Мова Ф.А",
+  "iconNameGlobeFa": "Глобус Ф.А",
+  "iconNameSubtitlesAltFa": "Субтитри Alt FA",
+  "iconNameSubtitlesAltOutlineFa": "Субтитри Alt Outline FA",
+  "iconNameChannelUpFa": "Канал угору FA",
+  "iconNameChannelDownFa": "Канал униз FA",
+  "iconNamePageUpFa": "Сторінка вгору FA",
+  "iconNamePageDownFa": "Сторінка вниз FA",
+  "iconNameGuideFa": "Керівництво Ф.А",
+  "iconNameGridViewFa": "Перегляд сітки FA",
+  "iconNameGridAltFa": "Сітка Alt FA",
+  "iconNameScheduleFa": "Розклад FA",
+  "iconNameCalendarFa": "Календар FA",
+  "iconNameRedButtonFa": "Червона кнопка FA",
+  "iconNameButtonOutlineFa": "Контур кнопки FA",
+  "iconNameSquareButtonFa": "Квадратна кнопка FA",
+  "iconNameSquareOutlineFa": "Квадратний контур FA",
+  "iconNameDotCircleFa": "Крапка Круг FA",
+  "iconNameToolsFa": "Інструменти FA",
+  "iconNameScrewdriverFa": "Викрутка FA",
+  "iconNameHammerFa": "Молот Ф.А",
+  "iconNameToolboxFa": "Набір інструментів FA",
+  "iconNameCogFa": "Гвинтик FA",
+  "iconNameAdjustFa": "Відрегулюйте FA",
+  "iconNameFilterFa": "Фільтр FA",
+  "iconNameSortDownFa": "Сортувати вниз FA",
+  "iconNameSortUpFa": "Сортувати FA",
+  "iconNameSleepFa": "Сон FA",
+  "iconNameTimerStartFa": "Таймер Пуск FA",
+  "iconNameTimerHalfFa": "Таймер Half FA",
+  "iconNameTimerEndFa": "Таймер завершення FA",
+  "iconNameStopwatchFa": "Секундомір FA",
+  "iconNameAlarmFa": "Сигналізація FA",
+  "iconNameCropAltFa": "Обрізання, альтернативна FA",
+  "iconNameCropFa": "Обробка FA",
+  "iconNameSquareFullFa": "Квадратний повний FA",
+  "iconNameFullscreenAltFa": "Повний екран Alt FA",
+  "iconNameZoomPlusFa": "Збільшення FA",
+  "iconNameZoomMinusFa": "Zoom Мінус FA",
+  "iconNameMusicNoteFa": "Нота FA",
+  "iconNameCdFa": "CD FA",
+  "iconNameVinylFa": "Вініл FA",
+  "iconNameRssFa": "RSS FA",
+  "iconNameMagicFa": "Магія FA",
+  "iconNameFingerprintFa": "Відбиток пальця FA",
+  "iconNameUserFa": "Користувач FA",
+  "iconNameUsersFa": "Користувачі FA",
+  "iconNameChildModeFa": "Дитячий режим FA",
+  "iconNameCastFa": "У ролях FA",
+  "iconNameStreamFa": "Потік FA",
+  "iconNameSignalFa": "Сигнал FA",
+  "iconNameFeedFa": "Годувати FA",
+  "iconNameCircleArrowUpFa": "Круг зі стрілкою вгору FA",
+  "iconNameCircleArrowDownFa": "Круг зі стрілкою вниз FA",
+  "iconNameCircleArrowLeftFa": "Круг зі стрілкою вліво FA",
+  "iconNameCircleArrowRightFa": "Круг зі стрілкою вправо FA",
+  "iconNameLongArrowUpFa": "Довга стрілка вгору FA",
+  "iconNameLongArrowDownFa": "Довга стрілка вниз FA",
+  "iconNameLongArrowLeftFa": "Довга стрілка вліво FA",
+  "iconNameLongArrowRightFa": "Довга стрілка вправо FA",
+  "iconNamePlusFa": "Плюс FA",
+  "iconNameMinusFa": "Мінус FA",
+  "iconNamePlusCircleFa": "Плюс Круг FA",
+  "iconNameMinusCircleFa": "Мінус Круг FA",
+  "iconNamePlusSquareFa": "Плюс Квадрат FA",
+  "iconNameMinusSquareFa": "Мінус квадрат FA",
+  "iconNameTimesFa": "Хрестик FA",
+  "iconNameTimesCircleFa": "Хрестик у колі FA",
+  "iconNameBatteryFullFa": "Акумулятор Повний FA",
+  "iconNameBattery34Fa": "Акумулятор 3/4 FA",
+  "iconNameBatteryHalfFa": "Акумулятор половини FA",
+  "iconNameBattery14Fa": "Акумулятор 1/4 FA",
+  "iconNameBatteryEmptyFa": "Порожня батарея FA",
+  "iconNameChargingFa": "Зарядка FA",
+  "iconNameCloudSunFa": "Сонце за хмарою FA",
+  "iconNameCloudMoonFa": "Місяць за хмарою FA",
+  "iconNameRainFa": "Дощ FA",
+  "iconNameSnowflakeFa": "Сніжинка Ф.А",
+  "iconNameFireFa": "Вогонь FA",
+  "iconNameTemperatureFa": "Температура FA",
+  "iconNameBoxFa": "Коробка FA",
+  "iconNameGiftFa": "Подарунок FA",
+  "iconNameTrophyFa": "Трофей FA",
+  "iconNameCrownFa": "Корона FA",
+  "iconNameGemFa": "Коштовність FA",
+  "unknownLabel": "Невідомий",
+  "selectedFilesLabel": "вибрані файли",
+  "folderNotFoundOrInaccessible": "Папка не знайдена або недоступна.",
+  "importedRemoteDefaultName": "Імпортований пульт",
+  "demoRemoteName": "Демонстраційний пульт",
+  "protocolFieldsInvalid": "Заповніть необхідні поля протоколу та переконайтеся, що частота становить 15–60 тисяч, якщо встановлено.",
+  "unknownProtocolSelected": "Вибрано невідомий протокол.",
+  "forceInAppVibrationTitle": "Примусова вібрація в програмі",
+  "forceInAppVibrationSubtitle": "Використовуйте вібратор безпосередньо, навіть якщо зворотний зв’язок системи від дотику вимкнено",
+  "forceInAppVibrationWarning": "Розширений варіант. Це може змусити програму вібрувати, навіть якщо сенсорний зворотній зв’язок Android вимкнено глобально.",
+  "forceInAppVibrationBlockedMasterWarning": "Вібрація системи Android вимкнена. Примусова вібрація в програмі не може замінити її на цьому пристрої.",
+  "forceInAppVibrationNoVibratorWarning": "Цей пристрій повідомляє про відсутність апаратного вібратора, тому вібрація в програмі не працює.",
+  "remoteButtonCountLabel": "{count, plural, one{{count} кнопка} few{{count} кнопки} many{{count} кнопок} other{{count} кнопки}}",
+  "@remoteButtonCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "macroStepCountLabel": "{count, plural, one{{count} крок} few{{count} кроки} many{{count} кроків} other{{count} кроку}}",
+  "@macroStepCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "continueSectionTitle": "Продовжити",
+  "@continueSectionTitle": {
+    "description": "Title for the recent continue strip on the remotes screen."
+  },
+  "continueSectionSubtitle": "Продовжуйте з того місця, де зупинилися.",
+  "@continueSectionSubtitle": {
+    "description": "Subtitle for the continue strip on the remotes screen."
+  },
+  "continueLastRemoteTitle": "Останній пульт",
+  "@continueLastRemoteTitle": {
+    "description": "Eyebrow label for the last opened remote card."
+  },
+  "continueLastMacroTitle": "Останній макрос",
+  "@continueLastMacroTitle": {
+    "description": "Eyebrow label for the last run macro card."
+  },
+  "continueLastIrFinderHitTitle": "Останнє попадання в інфрачервоний шукач",
+  "@continueLastIrFinderHitTitle": {
+    "description": "Eyebrow label for the last saved IR Finder result card."
+  },
+  "continueTargetUnavailable": "Цей товар більше не доступний.",
+  "@continueTargetUnavailable": {
+    "description": "Shown when a continue card points to a deleted or missing target."
+  },
+  "continueUniversalPowerAllBrands": "Всі бренди",
+  "@continueUniversalPowerAllBrands": {
+    "description": "Fallback label when the saved universal power context has no selected brand."
+  },
+  "untitledMacro": "Макрос без назви",
+  "@untitledMacro": {
+    "description": "Fallback title for a macro without a saved name."
+  },
+  "pinnedRemotesTitle": "Прикріплені пульти",
+  "@pinnedRemotesTitle": {
+    "description": "Title for the pinned remotes section on the remotes screen."
+  },
+  "pinnedRemotesSubtitle": "Тримайте найважливіші пульти одним дотиком.",
+  "@pinnedRemotesSubtitle": {
+    "description": "Subtitle for the pinned remotes section on the remotes screen."
+  },
+  "recentlyUsedRemotesTitle": "Нещодавно використаний",
+  "@recentlyUsedRemotesTitle": {
+    "description": "Title for the recently used remotes section on the remotes screen."
+  },
+  "recentlyUsedRemotesSubtitle": "Поверніться до пультів, які ви нещодавно відкривали.",
+  "@recentlyUsedRemotesSubtitle": {
+    "description": "Subtitle for the recently used remotes section on the remotes screen."
+  },
+  "pinRemote": "Прикріпити пульт",
+  "@pinRemote": {
+    "description": "Action label to pin a remote for quick access."
+  },
+  "unpinRemote": "Відкріпити пульт",
+  "@unpinRemote": {
+    "description": "Action label to remove a remote from the pinned section."
+  },
+  "pinRemoteSubtitle": "Тримайте цей пульт угорі для швидшого доступу.",
+  "@pinRemoteSubtitle": {
+    "description": "Subtitle shown under the pin/unpin remote action."
+  },
+  "remoteAddedToPinned": "Пульт закріплено.",
+  "@remoteAddedToPinned": {
+    "description": "Snackbar shown after pinning a remote."
+  },
+  "remoteRemovedFromPinned": "Пульт видалено із закріпленого.",
+  "@remoteRemovedFromPinned": {
+    "description": "Snackbar shown after unpinning a remote."
+  },
+  "homeDeviceControlsTitle": "Швидке керування",
+  "@homeDeviceControlsTitle": {
+    "description": "Title for the compact device controls row on the home surface."
+  },
+  "homeDeviceControlsSubtitle": "Живлення, вимкнення звуку та гучність без відкриття пульта.",
+  "@homeDeviceControlsSubtitle": {
+    "description": "Subtitle for the compact device controls row when controls are configured."
+  },
+  "homeDeviceControlsEmptySubtitle": "Налаштуйте кнопки живлення, вимкнення звуку та гучності в керуванні пристроєм.",
+  "@homeDeviceControlsEmptySubtitle": {
+    "description": "Subtitle for the compact device controls row when no matching controls are configured."
+  },
+  "showDeviceControlsOnHome": "Показувати швидке керування на головному екрані",
+  "@showDeviceControlsOnHome": {
+    "description": "Settings toggle title for showing the compact device controls row on the home surface."
+  },
+  "showDeviceControlsOnHomeSubtitle": "Показувати компактний рядок живлення, вимкнення звуку та гучності на головному екрані.",
+  "@showDeviceControlsOnHomeSubtitle": {
+    "description": "Settings toggle subtitle for showing the compact device controls row on the home surface."
+  },
+  "homeDeviceControlsShown": "Швидке керування показано на головному екрані.",
+  "@homeDeviceControlsShown": {
+    "description": "Snackbar shown when the home quick controls row is enabled."
+  },
+  "homeDeviceControlsHidden": "Швидке керування приховано з головного екрана.",
+  "@homeDeviceControlsHidden": {
+    "description": "Snackbar shown when the home quick controls row is disabled."
+  },
+  "power": "Живлення",
+  "@power": {
+    "description": "Short label for the power control."
+  },
+  "mute": "Вимкнути звук",
+  "@mute": {
+    "description": "Short label for the mute control."
+  },
+  "volumeUp": "Гучн. +",
+  "@volumeUp": {
+    "description": "Short label for the volume up control."
+  },
+  "volumeDown": "Гучн. -",
+  "@volumeDown": {
+    "description": "Short label for the volume down control."
+  },
+  "manage": "Керувати",
+  "@manage": {
+    "description": "Short action label for opening a management screen."
+  },
+  "hide": "Сховати",
+  "@hide": {
+    "description": "Short action label for hiding a surface or section."
+  },
+  "lastActionTitle": "Остання дія",
+  "@lastActionTitle": {
+    "description": "Title for the compact last action strip shown after sending IR."
+  },
+  "lastActionSent": "Надіслано {title}",
+  "@lastActionSent": {
+    "description": "Compact message in the last action strip when only the button title is known.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lastActionSentTo": "Надіслано {remoteName} -> {title}",
+  "@lastActionSentTo": {
+    "description": "Compact message in the last action strip when both remote name and button title are known.",
+    "placeholders": {
+      "remoteName": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "repeatAction": "Повторіть",
+  "@repeatAction": {
+    "description": "Short action label to resend the last IR action."
+  },
+  "globalSearchTitle": "Шукайте все",
+  "@globalSearchTitle": {
+    "description": "Title or tooltip for global search across remotes, buttons, and macros."
+  },
+  "globalSearchNoResults": "Результатів не знайдено.",
+  "@globalSearchNoResults": {
+    "description": "Empty state message for global search."
+  },
+  "globalSearchTypeRemote": "ПУЛЬТ",
+  "@globalSearchTypeRemote": {
+    "description": "Badge label for a remote search result."
+  },
+  "globalSearchTypeButton": "КНОПКА",
+  "@globalSearchTypeButton": {
+    "description": "Badge label for a button search result."
+  },
+  "globalSearchTypeMacro": "МАКРОС",
+  "@globalSearchTypeMacro": {
+    "description": "Badge label for a macro search result."
+  },
+  "continueEditing": "Продовжити редагування",
+  "unsavedChangesTitle": "Незбережені зміни",
+  "unsavedMacroChangesMessage": "Скасувати зміни макросу та залишити цей екран?",
+  "stopMacroBeforeLeaving": "Зупиніть макрос, перш ніж залишити цей екран.",
+  "stopTestingBeforeLeaving": "Припиніть тестування, перш ніж залишити цей екран.",
+  "learningModeEntryTitle": "Режим навчання",
+  "learningModeEntrySubtitle": "Крок за кроком зніміть кнопку з фізичного пульта",
+  "learningModeTitle": "Режим навчання",
+  "learningModeHeroTitle": "Навчити кнопку пульта",
+  "learningModeHeroSubtitle": "Налаштуйте приймач, підготуйте оригінальний пульт, запишіть одну команду, а потім перегляньте її, перш ніж зберегти на пульті.",
+  "learningModeReadyBadge": "Приймач готовий",
+  "learningModeNeedsPermissionBadge": "Потрібен дозвіл USB",
+  "learningModeSetupBadge": "Потрібне налаштування приймача",
+  "learningModeNoReceiverBadge": "Немає приймача навчання",
+  "learningModeCheckingBadge": "Перевірка обладнання",
+  "learningModeFourStepFlow": "4-кроковий керований потік",
+  "learningModeSaveAnywhereBadge": "Перегляньте перед збереженням",
+  "learningModeGuideTitle": "Підберіть там, де має відбутися захоплення",
+  "learningModeStepHardwareShort": "Обладнання",
+  "learningModeStepPrepareShort": "Приготуйте",
+  "learningModeStepCaptureShort": "захоплення",
+  "learningModeStepReviewShort": "огляд",
+  "learningModeStepHardwareTitle": "Перевірте обладнання приймача",
+  "learningModeStepHardwareSubtitle": "Перед початком перевірте, чи під’єднано та авторизовано сумісний навчальний приймач.",
+  "learningModeCurrentSenderLabel": "Передавач струму",
+  "learningModeReceiverStatusLabel": "Статус навчання",
+  "learningModeCheckingHardwareBody": "Перевірка доступного стану передавача та приймача USB.",
+  "learningModeHardwareReadyBody": "USB ІЧ-адаптер під’єднано та ініціалізовано. Це правильне місце для початку процесу навчання після підключення проводки захоплення.",
+  "learningModeHardwarePermissionBody": "USB-адаптер є, але дозвіл Android усе ще блокує його. Надайте дозвіл USB у розділі передавача перед навчанням.",
+  "learningModeHardwareSetupBody": "Ключ частково виявлено, але його все одно потрібно налаштувати або повторно підключити, перш ніж розпочнеться надійне навчання.",
+  "learningModeHardwareNoReceiverBody": "Наразі немає сумісного апаратного забезпечення приймача. Режим навчання призначений для підтримуваних зовнішніх ключів із можливістю отримання.",
+  "learningModeRefreshHardware": "Оновити стан обладнання",
+  "learningModeHardwareTipTitle": "Найкраще розміщення",
+  "learningModeHardwareTipBody": "Режим навчання живе під ІЧ-передавачем, оскільки він залежить від доступності апаратного забезпечення та використовується рідше, ніж надсилання пультів.",
+  "learningModeStepPrepareTitle": "Підготуйте оригінальний пульт",
+  "learningModeStepPrepareSubtitle": "Вирішіть, що ви вивчаєте, а потім тримайте оригінальний пульт непорушно та близько до приймача.",
+  "learningModeButtonNameLabel": "Назва кнопки",
+  "learningModeButtonNameHint": "Наприклад: HDMI 1, живлення, меню",
+  "learningModeSinglePress": "Одноразове натискання",
+  "learningModeHoldButton": "Кнопка утримання",
+  "learningModePreparationChecklistTitle": "Перед захопленням",
+  "learningModePreparationItemDistance": "Тримайте оригінальний пульт на відстані приблизно 2–5 см від приймача.",
+  "learningModePreparationItemOneButton": "Вивчайте одну кнопку за раз і використовуйте коротке, чисте натискання спочатку.",
+  "learningModePreparationItemStill": "Тримайте обидва пристрої нерухомо, щоб уникнути шумних або часткових зйомок.",
+  "learningModeStepCaptureTitle": "Захопити сигнал",
+  "learningModeStepCaptureSubtitle": "Прослухайте одну команду, а потім заблокуйте результат перед його переглядом.",
+  "learningModeCaptureReadyTitle": "Готовий слухати",
+  "learningModeCaptureReadyBody": "Обладнання готове. Тепер можна розпочати захоплення ІЧ-сигналу.",
+  "learningModeCaptureBlockedTitle": "Обладнання ще не готове",
+  "learningModeCaptureBlockedBody": "Ви все ще можете переглянути потік зараз, але захоплення має зачекати, доки приймач не буде готовий.",
+  "learningModeStartListening": "Почніть слухати",
+  "learningModeCaptureStubTitle": "На черзі — бекенд Capture",
+  "learningModeCaptureStubBody": "Цей екран спочатку повністю створено, тому остаточний потік захоплення може підключитися до реальних станів апаратного забезпечення, а не прикручуватися пізніше.",
+  "learningModeCaptureStubMessage": "Навчальний запис ще не підключено. Цей екран спочатку створює весь потік.",
+  "learningModeStepReviewTitle": "Перегляньте та збережіть",
+  "learningModeStepReviewSubtitle": "Підтвердьте те, що було вивчено, а потім виберіть, де воно має зберігатися у вашій бібліотеці пультів.",
+  "learningModeSaveToExistingRemote": "Наявний пульт",
+  "learningModeCreateNewRemote": "Новий пульт",
+  "learningModeProtocolPreviewTitle": "Попередній перегляд протоколу",
+  "learningModeProtocolPreviewBody": "Розшифровані відомості про протокол з’являться тут, коли приймач зафіксує чисте натискання кнопки.",
+  "learningModeRawPreviewTitle": "Необроблений запасний варіант",
+  "learningModeRawPreviewBody": "Якщо декодування не завершено, необроблений запис часу все ще буде доступний тут для перегляду та збереження.",
+  "learningModeSaveCapture": "Зберегти знімок",
+  "learningModeReviewTipTitle": "Куди це піде далі",
+  "learningModeReviewTipBody": "На наступному етапі впровадження слід підключити цю панель перегляду до кнопки «Створити» та наявних пультів, щоб отриманий сигнал потрапляв безпосередньо у вашу бібліотеку.",
+  "learningModeFinishPreview": "Завершити попередній перегляд",
+  "backAction": "Назад",
+  "learningModeUnnamedCapture": "Захоплення без назви",
+  "learningModeStatusCheckingTitle": "Перевірка приймача",
+  "learningModeStatusNoReceiverTitle": "Приймач не готовий",
+  "learningModeStatusPermissionTitle": "Потрібен дозвіл USB",
+  "learningModeStatusSetupTitle": "Приймач потребує налаштування",
+  "learningModeStatusReadyTitle": "Готовий вчитися",
+  "learningModeStatusListeningTitle": "Прослуховування сигналу",
+  "learningModeStatusCapturedTitle": "Сигнал зафіксовано",
+  "learningModeStatusReadyBody": "Назвіть кнопку, направте оригінальний пульт на приймач і почніть слухати, коли будете готові.",
+  "learningModeStatusListeningBody": "Натисніть кнопку на оригінальному пульті. Наступний чистий сигнал буде захоплено.",
+  "learningModeStatusCapturedBody": "Попередній перегляд отриманого сигналу готовий для {buttonName}. Повторіть його, переконайтеся, що він працює, а потім збережіть його у своїй бібліотеці.",
+  "learningModeConnectReceiverTitle": "Підключіть сумісний навчальний ключ",
+  "learningModeConnectReceiverBody": "Режим навчання залежить від зовнішнього обладнання, яке може приймати інфрачервоне випромінювання. Після виявлення та авторизації одержувача ця сторінка стає потоком прямого прослуховування, тестування та збереження.",
+  "learningModeListenCardTitle": "Слухайте одну кнопку",
+  "learningModeListenCardBody": "Якщо хочете, спочатку встановіть мітку, а потім почніть слухати й натисніть кнопку на оригінальному пульті.",
+  "learningModeReadyToListenTitle": "Готовий слухати",
+  "learningModeReadyToListenBody": "Це основна поверхня захоплення. Починайте прослуховувати лише тоді, коли оригінальний пульт спрямований і стабільний.",
+  "learningModeListeningNowTitle": "Зараз слухаю",
+  "learningModeListeningNowBody": "Один раз натисніть кнопку на оригінальному пульті та тримайте його спрямованим на приймач.",
+  "learningModePreviewCaptureAction": "Попередній перегляд захопленого сигналу",
+  "learningModeCapturedSummary": "Вивчений попередній перегляд сигналу",
+  "learningModeResultActionsTitle": "Перевірте та збережіть",
+  "learningModeResultActionsBody": "Повторно відтворіть отриманий сигнал, переконайтеся, що цільовий пристрій відповідає, а потім збережіть його як кнопку для багаторазового використання.",
+  "learningModeReplayAction": "Повтор",
+  "learningModeReplayStubMessage": "Повтор ще не підключений. Це каркас інтерфейсу користувача для остаточного процесу вивчення, тестування та збереження.",
+  "learningModeSaveStubMessage": "Зберегти ще не підключено. Наступним кроком буде підключення цього екрана до кнопки «Створити» та наявних пультів.",
+  "learningModeLearnAnotherAction": "Дізнайтеся іншу кнопку",
+  "@learningModeStatusCapturedBody": {
+    "placeholders": {
+      "buttonName": {}
+    }
+  },
+  "learningModeCaptureFailed": "Помилка запису.",
+  "learningModeReplaySent": "Відтворено вивчений сигнал.",
+  "learningModeReplayFailed": "Неможливо відтворити отриманий сигнал.",
+  "learningModeNoRemotesAvailable": "Ще немає збережених пультів.",
+  "learningModeChooseRemoteTitle": "Виберіть пульт",
+  "learningModeNewRemoteTitle": "Створіть новий пульт",
+  "learningModeSaveSuccess": "Вивчену кнопку збережено.",
+  "learningModeSaveFailed": "Не вдалося зберегти вивчену кнопку.",
+  "remoteSetupIntro": "Спочатку виберіть назву та макет. Після цього ви можете додати кнопки.",
+  "startWithDefault": "Почніть із замовчуванням",
+  "browseGithubStore": "Перегляньте GitHub Store",
+  "addFirstButton": "Додати першу кнопку",
+  "moreWaysToStart": "Більше способів почати",
+  "unsavedRemoteSetupChangesMessage": "Відмінити це нове налаштування пульта та залишити цей екран?",
+  "unsavedRemoteStudioChangesMessage": "Скасувати внесені зміни пульта та залишити цей екран?",
+  "firstButtonAdded": "Додано першу кнопку.",
+  "iconColorTitle": "Колір значка",
+  "iconColorHelper": "Виберіть колір символу, який залишатиметься видимим на фоні кнопки.",
+  "colorRed": "Червоний",
+  "colorPink": "Рожевий",
+  "colorPurple": "Фіолетовий",
+  "colorDeepPurple": "Темно-фіолетовий",
+  "colorIndigo": "Індиго",
+  "colorBlue": "Синій",
+  "colorLightBlue": "Світло-блакитний",
+  "colorCyan": "Бірюзовий",
+  "colorTeal": "Чирок",
+  "colorGreen": "Зелений",
+  "colorLightGreen": "світло-зелений",
+  "colorLime": "Лаймовий",
+  "colorYellow": "Жовтий",
+  "colorAmber": "Бурштин",
+  "colorOrange": "Помаранчевий",
+  "colorDeepOrange": "Темно-помаранчевий",
+  "colorBrown": "Коричневий",
+  "colorGrey": "Сірий",
+  "colorBlueGrey": "Синій сірий",
+  "colorBlack": "чорний",
+  "colorWhite": "Білий",
+  "buttonColorSemantics": "Колір кнопки {colorName}",
+  "@buttonColorSemantics": {
+    "placeholders": {
+      "colorName": {}
+    }
+  },
+  "buttonColorSemanticsSelected": "Вибраний колір кнопки {colorName}",
+  "@buttonColorSemanticsSelected": {
+    "placeholders": {
+      "colorName": {}
+    }
+  },
+  "iconColorSemantics": "Колір значка {colorName}",
+  "@iconColorSemantics": {
+    "placeholders": {
+      "colorName": {}
+    }
+  },
+  "iconColorSemanticsSelected": "Вибраний колір значка {colorName}",
+  "@iconColorSemanticsSelected": {
+    "placeholders": {
+      "colorName": {}
+    }
+  },
+  "irWaveformTitle": "ІЧ сигнал",
+  "@irWaveformTitle": {
+    "description": "Title for the IR waveform visualization panel."
+  },
+  "irWaveformPulseCount": "{count, plural, one{{count} імпульс} few{{count} імпульси} many{{count} імпульсів} other{{count} імпульсу}}",
+  "@irWaveformPulseCount": {
+    "description": "Number of active IR pulses in a waveform.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "irWaveformGapLabel": "Розрив {duration}",
+  "@irWaveformGapLabel": {
+    "description": "Longest off gap in an IR waveform.",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "irWaveformDurationCount": "{count, plural, one{{count} тривалість} few{{count} тривалості} many{{count} тривалостей} other{{count} тривалості}}",
+  "@irWaveformDurationCount": {
+    "description": "Number of timing durations in an IR waveform.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "irWaveformActiveHint": "Високий означає, що носій ІЧ-світлодіода активний; низький означає тишу.",
+  "@irWaveformActiveHint": {
+    "description": "Explanation for high and low states in the IR waveform graph."
+  },
+  "irWaveformOnLabel": "УВІМКНЕНО",
+  "@irWaveformOnLabel": {
+    "description": "Legend label for active carrier sections in an IR waveform."
+  },
+  "irWaveformOffLabel": "ВИМКНЕНО",
+  "@irWaveformOffLabel": {
+    "description": "Legend label for inactive/silent sections in an IR waveform."
+  },
+  "quickSettingsTilesTitle": "Плитки швидких налаштувань",
+  "quickSettingsPowerTile": "Плитка живлення",
+  "quickSettingsMuteTile": "Плитка вимкнення звуку",
+  "quickSettingsVolumeUpTile": "Плитка гучність +",
+  "quickSettingsVolumeDownTile": "Плитка гучність -",
+  "quickSettingsNoTilesConfigured": "Плитки не налаштовано",
+  "quickSettingsEmptyHint": "Наступний крок: виберіть команду принаймні для однієї плитки, а потім додайте плитку в меню редагування швидких налаштувань Android.",
+  "quickSettingsSetPowerTile": "Налаштувати плитку живлення",
+  "quickSettingsConfiguredHint": "Виберіть, яку кнопку надсилає кожна плитка. Додайте плитки в меню редагування швидких налаштувань Android.",
+  "quickSettingsNotSet": "Не налаштовано",
+  "quickSettingsTileMappingSummary": "{title} · {subtitle}",
+  "quickSettingsPickButtonTooltip": "Вибрати кнопку",
+  "quickSettingsClearTooltip": "Очистити",
+  "homeWidgetUnsupportedLauncher": "Ваш лаунчер не підтримує додавання віджетів із застосунку. Додайте віджет ІЧ-кнопки через вибір віджетів на головному екрані.",
+  "homeWidgetButtonUnsupported": "Цю кнопку не можна використовувати як віджет головного екрана.",
+  "homeWidgetRequestSent": "Запит на віджет надіслано. Підтвердьте його у лаунчері.",
+  "homeWidgetRequestRejected": "Лаунчер відхилив запит на віджет.",
+  "homeWidgetSetupFailed": "Не вдалося налаштувати віджет головного екрана: {error}",
+  "addHomeWidget": "Додати віджет на головний екран",
+  "addHomeWidgetSubtitle": "Розмістіть цю кнопку на головному екрані.",
+  "buttonInfoType": "Тип: {type}",
+  "buttonInfoCodeRaw": "Код: сирий сигнал",
+  "buttonInfoCode": "Код: {code}",
+  "buttonInfoNoCode": "НЕМАЄ КОДУ",
+  "buttonInfoFrequency": "Частота: {frequency}",
+  "frequencyHzLabel": "Частота (Гц)",
+  "carrierFrequencyHelper": "Несуча частота, наприклад 38000",
+  "requiredFrequencyHelper": "Обов’язково. Приклад: 38000",
+  "validFrequencyError": "Введіть допустиму частоту (15k-60k).",
+  "resetToDefaultFrequency": "Скинути до 38000",
+  "rawDataLabel": "Сирі дані",
+  "rawDataHelper": "Цілі числа, розділені пробілами, напр. 9000 4500 560 560 ...",
+  "rawDataInvalid": "Сирі дані мають бути цілими числами, розділеними пробілами або новими рядками.",
+  "rawDataSafeguard": "Захист: недійсні токени блокуються, щоб не зберегти шаблон, який неможливо надіслати.",
+  "protocolLabel": "Протокол",
+  "protocolEncodingHelper": "Кодування реалізовано лише для протоколів, позначених як реалізовані.",
+  "protocolFrequencyHelper": "Необов’язково. Якщо порожньо, використовується стандартна частота протоколу, якщо доступна.",
+  "rawSignalInvalidWithFrequency": "Сирі дані мають бути цілими числами, розділеними пробілами або новими рядками, а частота має бути 15k-60k.",
+  "necTimingsNumeric": "Усі таймінги NEC мають бути числовими.",
+  "frequencyRangeError": "Частота має бути 15k-60k Гц.",
+  "pasteTooltip": "Вставити",
+  "clearTooltip": "Очистити",
+  "irFinderResumeMask": "Маска: {value}",
+  "irFinderKnownMaskLabel": "Відома маска коду (необов’язково)",
+  "irFinderKnownMaskHint": "00FFXXFF, FFXXFF або 0xA1XX",
+  "irFinderKnownMaskHelper": "Корисне навантаження з {digits} цифр. Використовуйте X для невідомих цифр; пропущені кінцеві цифри стануть X. Приклад: {example}",
+  "irFinderKnownMaskInvalidCharacters": "Використовуйте лише шістнадцяткові цифри, X, пробіли, двокрапки, дефіси або підкреслення.",
+  "irFinderKnownMaskTooLong": "Маска довша за {digits}-значне навантаження цього протоколу.",
+  "irFinderNormalizedMaskValue": "Нормалізована маска: {value}",
+  "irFinderNormalizedMask": "Нормалізована маска",
+  "irFinderNormalizedMaskAllUnknown": "Усі цифри невідомі",
+  "irFinderSearchOrder": "Порядок пошуку",
+  "irFinderSmartOrder": "Розумний",
+  "irFinderSequentialOrder": "Послідовний",
+  "irFinderSmartOrderHint": "З урахуванням протоколу: спочатку перевіряє типові малі значення, потім розподіляє поля команд і пристроїв, пропускаючи невикористані біти.",
+  "irFinderSequentialOrderHint": "Режим сумісності: перевіряє підстановні цифри за зростанням шістнадцяткового значення.",
+  "irFinderSmartMeaningfulBits": "Розумний режим змінює {bits} значущих бітів для цієї маски.",
+  "irFinderBruteforceMaskTip": "Порада: замініть кожну невідому цифру на X. Відомі цифри в будь-якій позиції значно скорочують пошук."
+}
